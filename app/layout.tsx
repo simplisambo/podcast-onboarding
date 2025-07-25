@@ -18,6 +18,9 @@ const merriweather = Merriweather({
 export const metadata: Metadata = {
   title: "Walking with the Wise - Guest Onboarding",
   description: "Personalized onboarding for podcast guests",
+  icons: {
+    icon: "/favicon.png",
+  },
     generator: 'v0.dev'
 }
 
