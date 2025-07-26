@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Amaranth, Merriweather } from "next/font/google"
 import "./globals.css"
+import { Analytics } from "@vercel/analytics/next"
 
 const amaranth = Amaranth({
   weight: ["400", "700"],
@@ -28,7 +29,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${amaranth.variable} ${merriweather.variable} antialiased`}>{children}</body>
+      <body className={`${amaranth.variable} ${merriweather.variable} antialiased`}>
+        {children}
+        <Analytics />
+      </body>
     </html>
   )
 }
