@@ -11,6 +11,11 @@ import { Users, Mic, Video, ExternalLink, Play, Pause, Loader2 } from "lucide-re
 import { FadeTypewriter } from "@/components/fade-typewriter"
 import { useGuestData } from "@/hooks/use-guest-data"
 
+// Function to remove markdown headers from Notion content
+function removeMarkdownHeaders(content: string): string {
+  return content.replace(/^#+\s*/gm, '')
+}
+
 function ScrollSection({
   children,
   delay = 0,
@@ -487,7 +492,7 @@ export default function OnboardingPage() {
                     <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg mt-6">
                       <h4 className="font-semibold text-[#2B6951] mb-4">Planned Questions:</h4>
                       <div className="prose prose-sm max-w-none text-gray-700">
-                        <pre className="whitespace-pre-wrap font-sans">{guestData.pageContent}</pre>
+                        <pre className="whitespace-pre-wrap font-sans">{removeMarkdownHeaders(guestData.pageContent)}</pre>
                       </div>
                     </div>
                   )}
