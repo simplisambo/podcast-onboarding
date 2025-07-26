@@ -7,8 +7,9 @@ import { useEffect, useState, useRef } from "react"
 import { motion, useInView } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
-import { Users, Mic, Video, ExternalLink, Play, Pause } from "lucide-react"
+import { Users, Mic, Video, ExternalLink, Play, Pause, Loader2 } from "lucide-react"
 import { FadeTypewriter } from "@/components/fade-typewriter"
+import { useGuestData } from "@/hooks/use-guest-data"
 
 function ScrollSection({
   children,
@@ -111,6 +112,7 @@ function TableOfContents({ isVideoPlaying }: { isVideoPlaying: boolean }) {
 export default function OnboardingPage() {
   const params = useParams()
   const [guestName, setGuestName] = useState("")
+  const [lastName, setLastName] = useState("")
   const [showContent, setShowContent] = useState(false)
   const [fadeOut, setFadeOut] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -120,6 +122,9 @@ export default function OnboardingPage() {
   const playerRef = useRef<HTMLVideoElement>(null)
   const progressBarRef = useRef<HTMLDivElement>(null)
   const videoContainerRef = useRef<HTMLDivElement>(null)
+
+  // Fetch guest data from Notion
+  const { guestData, loading: guestLoading, error: guestError } = useGuestData(lastName)
 
   useEffect(() => {
     if (params["title-last"]) {
@@ -132,6 +137,7 @@ export default function OnboardingPage() {
       const firstWord = nameParts[0].toLowerCase()
       
       let formattedName = ""
+      let extractedLastName = ""
       
       if (titles.includes(firstWord)) {
         // If first word is a title, format as "Title. Lastname"
@@ -140,13 +146,16 @@ export default function OnboardingPage() {
           word.charAt(0).toUpperCase() + word.slice(1)
         ).join(" ")
         formattedName = `${title}. ${lastName}`
+        extractedLastName = nameParts[nameParts.length - 1] // Get the last part as last name
       } else {
         // If first word is not a title, assume it's a first name
         const firstName = nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1)
         formattedName = firstName
+        extractedLastName = nameParts[nameParts.length - 1] // Get the last part as last name
       }
 
       setGuestName(formattedName)
+      setLastName(extractedLastName)
 
       // Start fade out after 3 seconds
       const fadeTimer = setTimeout(() => setFadeOut(true), 3000)
@@ -395,6 +404,8 @@ export default function OnboardingPage() {
             </section>
           </ScrollSection>
 
+
+
           {/* About the Podcast */}
           <motion.div animate={{ opacity: isPlaying ? 0.5 : 1 }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}>
             <ScrollSection delay={0.1} id="audience" useStandardMargin={true}>
@@ -446,18 +457,42 @@ export default function OnboardingPage() {
                 </div>
 
                 <div className="space-y-6 text-base text-gray-700 leading-relaxed">
+                  {guestLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-[#2B6951] mr-2" />
+                      <span>Loading guest information...</span>
+                    </div>
+                  ) : guestError ? (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <p className="text-yellow-800">
+                        <strong>Note:</strong> {guestError}. Using default content.
+                      </p>
+                    </div>
+                  ) : null}
+                  
                   <p>
                     <strong className="text-[#2B6951]">{guestName}, you're the expert!</strong> We'll have some
                     questions prepared, but feel free to take the conversation wherever you feel most led.
                   </p>
+                  
                   <p>
                     Let us know if there's a topic you'd really love to cover. The best episodes are when guests are
                     sharing what excites them most.
                   </p>
+                  
                   <p>
                     We especially love hearing <strong className="text-[#2B6951]">stories from your own life</strong>{" "}
                     that contain wisdom or practical takeaways.
                   </p>
+                  
+                  {guestData?.pageContent && (
+                    <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg mt-6">
+                      <h4 className="font-semibold text-[#2B6951] mb-4">Additional Information:</h4>
+                      <div className="prose prose-sm max-w-none text-gray-700">
+                        <pre className="whitespace-pre-wrap font-sans">{guestData.pageContent}</pre>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </section>
             </ScrollSection>
