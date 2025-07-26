@@ -1,7 +1,6 @@
 "use client"
 
-import type React from "react"
-
+import React from "react"
 import { useParams } from "next/navigation"
 import { useEffect, useState, useRef } from "react"
 import { motion, useInView } from "framer-motion"
@@ -119,14 +118,25 @@ export default function OnboardingPage() {
   const [guestName, setGuestName] = useState("")
   const [lastName, setLastName] = useState("")
   const [showContent, setShowContent] = useState(false)
+  const [showThankYou, setShowThankYou] = useState(false)
+  const [showRestOfPage, setShowRestOfPage] = useState(false)
   const [fadeOut, setFadeOut] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [progressBarWidth, setProgressBarWidth] = useState(0)
   const [hasPlayedOnce, setHasPlayedOnce] = useState(false)
   const [progress, setProgress] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const playerRef = useRef<HTMLVideoElement>(null)
   const progressBarRef = useRef<HTMLDivElement>(null)
   const videoContainerRef = useRef<HTMLDivElement>(null)
+
+  // Function to get time-based greeting
+  const getTimeBasedGreeting = () => {
+    const hour = new Date().getHours()
+    if (hour < 12) return "Good morning,"
+    if (hour < 17) return "Good afternoon,"
+    return "Good evening,"
+  }
 
   // Fetch guest data from Notion
   const { guestData, loading: guestLoading, error: guestError } = useGuestData(lastName)
@@ -165,13 +175,36 @@ export default function OnboardingPage() {
       // Start fade out after 3 seconds
       const fadeTimer = setTimeout(() => setFadeOut(true), 3000)
 
-      // Show content 2 seconds after fade out starts (total 5 seconds)
-      const contentTimer = setTimeout(() => setShowContent(true), 5000)
+      // Show thank you message 2 seconds after fade out starts (total 5 seconds)
+      const thankYouTimer = setTimeout(() => setShowThankYou(true), 5000)
 
-      return () => {
-        clearTimeout(fadeTimer)
-        clearTimeout(contentTimer)
-      }
+      // Start progress bar animation when thank you message shows
+      const progressStartTimer = setTimeout(() => {
+        const startTime = Date.now()
+        const duration = 8000 // 8 seconds
+        
+        const updateProgress = () => {
+          const elapsed = Date.now() - startTime
+          const progress = Math.min(elapsed / duration, 1)
+          setProgressBarWidth(progress * 100)
+          
+          if (progress < 1) {
+            requestAnimationFrame(updateProgress)
+          }
+        }
+        
+        updateProgress()
+      }, 5000)
+
+      // Show rest of page 8 seconds after thank you starts (total 13 seconds)
+      const restOfPageTimer = setTimeout(() => setShowRestOfPage(true), 13000)
+
+              return () => {
+          clearTimeout(fadeTimer)
+          clearTimeout(thankYouTimer)
+          clearTimeout(progressStartTimer)
+          clearTimeout(restOfPageTimer)
+        }
     }
   }, [params])
 
@@ -243,22 +276,20 @@ export default function OnboardingPage() {
     }
   }, [isDragging])
 
-  if (!showContent) {
+  if (!showThankYou) {
     return (
       <motion.div
         className="min-h-screen bg-white flex items-center justify-center"
         initial={{ opacity: 1 }}
         animate={{ opacity: fadeOut ? 0 : 1 }}
-        transition={{ duration: 2, ease: "easeOut" }}
+        transition={{ duration: 1, ease: "easeOut" }}
       >
         <div className="text-center px-4">
           <div className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight" style={{ fontFamily: "var(--font-amaranth)" }}>
-            <FadeTypewriter text="Welcome, " letterDelay={50} className="text-gray-600 font-normal" />
-            <FadeTypewriter
-              text={guestName}
-              delay={450} // Start after "Welcome, " finishes (9 characters * 50ms)
-              letterDelay={50}
-              className="text-black font-bold"
+            <FadeTypewriter 
+              text={`${getTimeBasedGreeting()} ${guestName}`} 
+              letterDelay={50} 
+              className="text-gray-600 font-normal"
             />
           </div>
         </div>
@@ -266,8 +297,64 @@ export default function OnboardingPage() {
     )
   }
 
+  if (!showRestOfPage) {
+    return (
+      <motion.div
+        className="min-h-screen bg-white flex items-center justify-center relative"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, ease: "easeOut" }}
+      >
+        <div className="text-center px-4 max-w-4xl">
+          <motion.p
+            className="text-lg text-gray-700 mb-8 leading-relaxed max-w-3xl text-left"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+          >
+            <strong className="text-[#2B6951]">{guestName}</strong>, thank you so much for being willing to record an interview with us! Seriously, we know you are very busy and have a ton of responsibility, so it means a lot to us that you're willing to invest 50 minutes into us and our listeners.
+          </motion.p>
+          <motion.p
+            className="text-lg text-gray-700 leading-relaxed max-w-3xl text-left"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.0 }}
+          >
+            <strong className="text-[#2B6951]">Pro Rege,</strong><br />
+            Nate and Sam
+          </motion.p>
+        </div>
+        
+        {/* Progress Bar */}
+        <div className="absolute bottom-0 left-0 right-0 h-2 bg-gray-200">
+          <motion.div
+            className="h-full bg-[#2B6951]"
+            initial={{ width: "0%" }}
+            animate={{ width: `${progressBarWidth}%` }}
+            transition={{ duration: 0.1, ease: "linear" }}
+          />
+        </div>
+      </motion.div>
+    )
+  }
+
   return (
     <>
+      {/* Logo in top left corner */}
+      <motion.div
+        className="fixed top-8 left-8 z-30"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+      >
+        <img
+          src="/logowwtw.png"
+          alt="Walking With The Wise Logo"
+          className="h-32 w-auto object-contain rounded-lg"
+          style={{ maxWidth: '400px' }}
+        />
+      </motion.div>
+
       <TableOfContents isVideoPlaying={isPlaying} />
 
       {/* White overlay that appears when video is playing */}
@@ -290,20 +377,13 @@ export default function OnboardingPage() {
           <ScrollSection id="intro">
             <section className="text-center">
               <motion.h2
-                className="text-5xl font-bold text-gray-900 mb-4"
+                className="text-5xl font-bold mb-4"
                 style={{ fontFamily: "var(--font-amaranth)" }}
                 animate={{ opacity: isPlaying ? 0.5 : 1 }}
                 transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
               >
-                We can't wait!
+                Welcome to <span className="text-[#2B6951]">Walking With The Wise</span>
               </motion.h2>
-              <motion.p
-                className="text-lg text-gray-700 mb-8 leading-relaxed max-w-3xl mx-auto"
-                animate={{ opacity: isPlaying ? 0.5 : 1 }}
-                transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-              >
-                This page can help for any pre-recording prep :)
-              </motion.p>
               {/* Modern Video Player with Custom Controls */}
               <div className="flex justify-center items-center w-full px-4">
                 <motion.div
@@ -603,9 +683,31 @@ export default function OnboardingPage() {
                     >
                       Nate
                     </h4>
-                    <p className="text-base text-gray-700 leading-relaxed">
-                      I'm from Vegas and that's my whole personality.
+                    <p className="text-base text-gray-700 leading-relaxed mb-4">
+                      I grew up in Las Vegas, NV! I graduated from Liberty in 2025 with a degree in Mechanical Engineering, and I'm working at LU right now on a business accelerator!
                     </p>
+                    <div className="flex justify-center space-x-4">
+                      <a
+                        href="https://instagram.com/natebreed"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#2B6951] hover:text-[#1e4a3a] transition-colors"
+                      >
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                      </a>
+                      <a
+                        href="https://linkedin.com/in/natebreed"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#2B6951] hover:text-[#1e4a3a] transition-colors"
+                      >
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                      </a>
+                    </div>
                   </div>
                   <div className="text-center">
                     <img
@@ -619,10 +721,32 @@ export default function OnboardingPage() {
                     >
                       Sam
                     </h4>
-                    <p className="text-base text-gray-700 leading-relaxed">
+                    <p className="text-base text-gray-700 leading-relaxed mb-4">
                       Hey! I grew up partly in North Africa and partly in Kentucky. I graduated from Liberty in 2025 and
                       currently work at Microsoft doing cybersecurity. I love to play devil's advocate in the interview!
                     </p>
+                    <div className="flex justify-center space-x-4">
+                      <a
+                        href="https://instagram.com/samroenicke"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#2B6951] hover:text-[#1e4a3a] transition-colors"
+                      >
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                      </a>
+                      <a
+                        href="https://linkedin.com/in/samroenicke"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#2B6951] hover:text-[#1e4a3a] transition-colors"
+                      >
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                      </a>
+                    </div>
                   </div>
                 </div>
               </section>
