@@ -5,7 +5,7 @@ import type React from "react"
 import { useParams } from "next/navigation"
 import { useEffect, useState, useRef } from "react"
 import { motion, useInView } from "framer-motion"
-import ReactPlayer from "react-player"
+
 import { Button } from "@/components/ui/button"
 import { Users, Mic, Video, ExternalLink, Play, Pause } from "lucide-react"
 import { FadeTypewriter } from "@/components/fade-typewriter"
@@ -108,7 +108,7 @@ export default function OnboardingPage() {
   const [hasPlayedOnce, setHasPlayedOnce] = useState(false)
   const [progress, setProgress] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
-  const playerRef = useRef<ReactPlayer>(null)
+  const playerRef = useRef<HTMLVideoElement>(null)
   const progressBarRef = useRef<HTMLDivElement>(null)
   const videoContainerRef = useRef<HTMLDivElement>(null)
 
@@ -216,8 +216,8 @@ export default function OnboardingPage() {
         animate={{ opacity: fadeOut ? 0 : 1 }}
         transition={{ duration: 2, ease: "easeOut" }}
       >
-        <div className="text-center">
-          <div className="text-6xl whitespace-nowrap" style={{ fontFamily: "var(--font-amaranth)" }}>
+        <div className="text-center px-4">
+          <div className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight" style={{ fontFamily: "var(--font-amaranth)" }}>
             <FadeTypewriter text="Welcome, " letterDelay={50} className="text-gray-600 font-normal" />
             <FadeTypewriter
               text={guestName}
@@ -272,7 +272,7 @@ export default function OnboardingPage() {
               {/* Modern Video Player with Custom Controls */}
               <motion.div
                 ref={videoContainerRef}
-                className="relative max-w-3xl mx-auto rounded-xl overflow-hidden z-30"
+                className="relative max-w-3xl mx-auto rounded-xl overflow-hidden z-30 group"
                 initial={{ scale: 1, boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.1)" }}
                 animate={{
                   scale: isPlaying ? 1.1 : 1,
@@ -350,13 +350,14 @@ export default function OnboardingPage() {
                   </button>
                 )}
 
-                {/* Custom Progress Bar - Only show after first play */}
+                {/* Custom Progress Bar - Only show after first play, when paused or on hover */}
                 {hasPlayedOnce && (
                   <div
                     ref={progressBarRef}
-                    className="absolute bottom-0 left-0 right-0 h-2 bg-black bg-opacity-20 cursor-pointer"
+                    className="absolute bottom-0 left-0 right-0 h-2 bg-black bg-opacity-20 cursor-pointer opacity-0 hover:opacity-100 group-hover:opacity-100 transition-opacity duration-200"
                     onMouseDown={handleProgressBarMouseDown}
                     onClick={handleProgressBarClick}
+                    style={{ opacity: isPlaying ? 0 : 1 }}
                   >
                     <div
                       className="h-full bg-white transition-all duration-75"
