@@ -46,13 +46,20 @@ function TableOfContents({ isVideoPlaying }: { isVideoPlaying: boolean }) {
   useEffect(() => {
     const handleScroll = () => {
       const sections = ["intro", "audience", "conversation", "tech", "about"]
-      const scrollPosition = window.scrollY + 200
+      const windowHeight = window.innerHeight
+      const scrollPosition = window.scrollY + windowHeight / 2 // Middle of the screen
 
       for (let i = sections.length - 1; i >= 0; i--) {
         const element = document.getElementById(sections[i])
-        if (element && element.offsetTop <= scrollPosition) {
-          setActiveSection(sections[i])
-          break
+        if (element) {
+          const elementTop = element.offsetTop
+          const elementBottom = elementTop + element.offsetHeight
+          
+          // Check if the middle of the screen is within this section
+          if (scrollPosition >= elementTop && scrollPosition <= elementBottom) {
+            setActiveSection(sections[i])
+            break
+          }
         }
       }
     }
@@ -87,8 +94,10 @@ function TableOfContents({ isVideoPlaying }: { isVideoPlaying: boolean }) {
           <button
             key={section.id}
             onClick={() => scrollToSection(section.id)}
-            className={`block text-sm transition-colors duration-200 hover:text-black ${
-              activeSection === section.id ? "text-black font-medium" : "text-gray-600"
+            className={`block text-sm transition-all duration-300 ease-out hover:text-black ${
+              activeSection === section.id 
+                ? "text-black font-medium text-base scale-110" 
+                : "text-gray-600 scale-100"
             }`}
           >
             {section.label}
