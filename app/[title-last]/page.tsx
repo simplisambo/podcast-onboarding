@@ -125,14 +125,26 @@ export default function OnboardingPage() {
     if (params["title-last"]) {
       const nameSlug = params["title-last"] as string
       const nameParts = nameSlug.split("-")
-
-      // Add period after first part (title) and capitalize all parts
-      const formattedName = nameParts
-        .map((word, index) => {
-          const capitalizedWord = word.charAt(0).toUpperCase() + word.slice(1)
-          return index === 0 ? `${capitalizedWord}.` : capitalizedWord
-        })
-        .join(" ")
+      
+      // List of common titles
+      const titles = ["prof", "dr", "mr", "ms", "mrs", "miss", "rev", "sir", "madam", "captain", "colonel", "general", "admiral", "senator", "governor", "president", "ambassador", "bishop", "pastor", "father", "sister", "brother"]
+      
+      const firstWord = nameParts[0].toLowerCase()
+      
+      let formattedName = ""
+      
+      if (titles.includes(firstWord)) {
+        // If first word is a title, format as "Title. Lastname"
+        const title = nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1)
+        const lastName = nameParts.slice(1).map(word => 
+          word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(" ")
+        formattedName = `${title}. ${lastName}`
+      } else {
+        // If first word is not a title, assume it's a first name
+        const firstName = nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1)
+        formattedName = firstName
+      }
 
       setGuestName(formattedName)
 
