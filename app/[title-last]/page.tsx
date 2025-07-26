@@ -107,7 +107,6 @@ export default function OnboardingPage() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [hasPlayedOnce, setHasPlayedOnce] = useState(false)
   const [progress, setProgress] = useState(0)
-  const [duration, setDuration] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const playerRef = useRef<ReactPlayer>(null)
   const progressBarRef = useRef<HTMLDivElement>(null)
@@ -145,13 +144,9 @@ export default function OnboardingPage() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (isPlaying && videoContainerRef.current && !videoContainerRef.current.contains(event.target as Node)) {
-        if (playerRef.current) {
-          const internalPlayer = playerRef.current.getInternalPlayer()
-          if (internalPlayer && typeof internalPlayer.pause === "function") {
-            internalPlayer.pause()
-          } else {
-            setIsPlaying(false)
-          }
+        const video = playerRef.current as HTMLVideoElement
+        if (video) {
+          video.pause()
         }
       }
     }
@@ -171,8 +166,11 @@ export default function OnboardingPage() {
     const clickX = e.clientX - rect.left
     const newProgress = clickX / rect.width
 
-    playerRef.current.seekTo(newProgress, "fraction")
-    setProgress(newProgress)
+    const video = playerRef.current as HTMLVideoElement
+    if (video && video.duration > 0) {
+      video.currentTime = newProgress * video.duration
+      setProgress(newProgress)
+    }
   }
 
   const handleProgressBarMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -187,8 +185,11 @@ export default function OnboardingPage() {
     const clickX = e.clientX - rect.left
     const newProgress = Math.max(0, Math.min(1, clickX / rect.width))
 
-    playerRef.current.seekTo(newProgress, "fraction")
-    setProgress(newProgress)
+    const video = playerRef.current as HTMLVideoElement
+    if (video && video.duration > 0) {
+      video.currentTime = newProgress * video.duration
+      setProgress(newProgress)
+    }
   }
 
   const handleMouseUp = () => {
@@ -279,39 +280,37 @@ export default function OnboardingPage() {
                 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
               >
-                <ReactPlayer
-                  ref={playerRef}
-                  url="https://pub-bd9011e5a7894589b50ac5a4e1765260.r2.dev/Podcast%20Outro.mp4"
-                  width="100%"
-                  height="100%"
-                  controls={false}
-                  playing={isPlaying}
+                {/* Temporary test with basic video element */}
+                <video
+                  ref={playerRef as any}
+                  src="https://pub-bd9011e5a7894589b50ac5a4e1765260.r2.dev/Podcast%20Outro.mp4"
                   style={{
+                    width: "100%",
+                    height: "100%",
                     aspectRatio: "16/9",
                   }}
-                  config={{
-                    file: {
-                      attributes: {
-                        style: {
-                          width: "100%",
-                          height: "100%",
-                        },
-                      },
-                    },
-                  }}
                   onPlay={() => {
+                    console.log("Video started playing")
                     setIsPlaying(true)
                     setHasPlayedOnce(true)
                   }}
-                  onPause={() => setIsPlaying(false)}
-                  onEnded={() => setIsPlaying(false)}
-                  onProgress={({ played }) => {
-                    if (!isDragging) {
-                      setProgress(played)
+                  onPause={() => {
+                    console.log("Video paused")
+                    setIsPlaying(false)
+                  }}
+                  onEnded={() => {
+                    console.log("Video ended")
+                    setIsPlaying(false)
+                  }}
+                  onError={(error) => {
+                    console.error("Video error:", error)
+                  }}
+                  onTimeUpdate={(e) => {
+                    const video = e.target as HTMLVideoElement
+                    if (video.duration > 0 && !isDragging) {
+                      setProgress(video.currentTime / video.duration)
                     }
                   }}
-                  onDuration={(duration) => setDuration(duration)}
-                  progressInterval={50} // Update every 50ms for smooth progress
                 />
 
                 {/* Custom Play Button - Only show when not playing */}
@@ -321,14 +320,9 @@ export default function OnboardingPage() {
                     animate={{ opacity: isPlaying ? 0 : 1 }}
                     transition={{ duration: 0.2 }}
                     onClick={() => {
-                      if (playerRef.current) {
-                        const internalPlayer = playerRef.current.getInternalPlayer()
-                        if (internalPlayer && typeof internalPlayer.play === "function") {
-                          internalPlayer.play()
-                        } else {
-                          // Fallback: use ReactPlayer's built-in method
-                          setIsPlaying(true)
-                        }
+                      const video = playerRef.current as HTMLVideoElement
+                      if (video) {
+                        video.play()
                       }
                     }}
                     className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-200"
@@ -343,14 +337,9 @@ export default function OnboardingPage() {
                 {isPlaying && (
                   <button
                     onClick={() => {
-                      if (playerRef.current) {
-                        const internalPlayer = playerRef.current.getInternalPlayer()
-                        if (internalPlayer && typeof internalPlayer.pause === "function") {
-                          internalPlayer.pause()
-                        } else {
-                          // Fallback: use ReactPlayer's built-in method
-                          setIsPlaying(false)
-                        }
+                      const video = playerRef.current as HTMLVideoElement
+                      if (video) {
+                        video.pause()
                       }
                     }}
                     className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-200 opacity-0 hover:opacity-100"
