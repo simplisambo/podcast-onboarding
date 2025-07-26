@@ -61,23 +61,98 @@ export async function findGuestByLastName(lastName: string): Promise<GuestData |
 
     // Extract text content from all blocks
     let pageContent = ''
+    let inQuestionsSection = false
+    let questionsContent = ''
+    let numberedListCounter = 1
+    
     for (const block of blocksResponse.results) {
-      if (block.type === 'paragraph' && block.paragraph.rich_text.length > 0) {
-        pageContent += block.paragraph.rich_text.map((text: any) => text.plain_text).join('') + '\n\n'
+      let blockText = ''
+      let blockType = ''
+      
+      if (block.type === 'paragraph') {
+        if (block.paragraph.rich_text.length > 0) {
+          blockText = block.paragraph.rich_text.map((text: any) => text.plain_text).join('') + '\n\n'
+        } else {
+          // Empty paragraph - add spacing
+          blockText = '\n'
+        }
+        blockType = 'paragraph'
+        numberedListCounter = 1 // Reset counter for new section
       } else if (block.type === 'heading_1' && block.heading_1.rich_text.length > 0) {
-        pageContent += '# ' + block.heading_1.rich_text.map((text: any) => text.plain_text).join('') + '\n\n'
+        blockText = '# ' + block.heading_1.rich_text.map((text: any) => text.plain_text).join('') + '\n\n'
+        blockType = 'heading_1'
+        numberedListCounter = 1
       } else if (block.type === 'heading_2' && block.heading_2.rich_text.length > 0) {
-        pageContent += '## ' + block.heading_2.rich_text.map((text: any) => text.plain_text).join('') + '\n\n'
+        blockText = '## ' + block.heading_2.rich_text.map((text: any) => text.plain_text).join('') + '\n\n'
+        blockType = 'heading_2'
+        numberedListCounter = 1
       } else if (block.type === 'heading_3' && block.heading_3.rich_text.length > 0) {
-        pageContent += '### ' + block.heading_3.rich_text.map((text: any) => text.plain_text).join('') + '\n\n'
+        blockText = '### ' + block.heading_3.rich_text.map((text: any) => text.plain_text).join('') + '\n\n'
+        blockType = 'heading_3'
+        numberedListCounter = 1
       } else if (block.type === 'bulleted_list_item' && block.bulleted_list_item.rich_text.length > 0) {
-        pageContent += '• ' + block.bulleted_list_item.rich_text.map((text: any) => text.plain_text).join('') + '\n'
+        blockText = '• ' + block.bulleted_list_item.rich_text.map((text: any) => text.plain_text).join('') + '\n'
+        blockType = 'bulleted_list_item'
       } else if (block.type === 'numbered_list_item' && block.numbered_list_item.rich_text.length > 0) {
-        pageContent += '1. ' + block.numbered_list_item.rich_text.map((text: any) => text.plain_text).join('') + '\n'
+        blockText = numberedListCounter + '. ' + block.numbered_list_item.rich_text.map((text: any) => text.plain_text).join('') + '\n'
+        
+        // Fetch children if this numbered list item has them
+        if (block.has_children) {
+          try {
+            const childrenResponse = await notion.blocks.children.list({
+              block_id: block.id,
+            })
+            
+            // Add sub-items with letters
+            let subCounter = 97 // ASCII for 'a'
+            for (const child of childrenResponse.results) {
+              if (child.type === 'numbered_list_item' && child.numbered_list_item.rich_text.length > 0) {
+                const subText = child.numbered_list_item.rich_text.map((text: any) => text.plain_text).join('')
+                blockText += '  ' + String.fromCharCode(subCounter) + '. ' + subText + '\n'
+                subCounter++
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching children:', error)
+          }
+        }
+        
+        numberedListCounter++
+        blockType = 'numbered_list_item'
+      } else if (block.type === 'to_do' && block.to_do.rich_text.length > 0) {
+        // Handle to-do items which might be used for sub-lists
+        const checkbox = block.to_do.checked ? '☑ ' : '☐ '
+        blockText = '  ' + checkbox + block.to_do.rich_text.map((text: any) => text.plain_text).join('') + '\n'
+        blockType = 'to_do'
       } else if (block.type === 'quote' && block.quote.rich_text.length > 0) {
-        pageContent += '> ' + block.quote.rich_text.map((text: any) => text.plain_text).join('') + '\n\n'
+        blockText = '> ' + block.quote.rich_text.map((text: any) => text.plain_text).join('') + '\n\n'
+        blockType = 'quote'
+      } else if (block.type === 'toggle' && block.toggle.rich_text.length > 0) {
+        blockText = block.toggle.rich_text.map((text: any) => text.plain_text).join('') + '\n\n'
+        blockType = 'toggle'
+      } else if (block.type === 'callout' && block.callout.rich_text.length > 0) {
+        blockText = block.callout.rich_text.map((text: any) => text.plain_text).join('') + '\n\n'
+        blockType = 'callout'
+      }
+      
+      // Check if this block starts the questions section
+      if (blockType === 'heading_2' && blockText.toLowerCase().includes('## questions')) {
+        inQuestionsSection = true
+        continue // Skip the "## Questions" header itself
+      }
+      
+      // Check if this block contains "post-recording" (case insensitive)
+      if (blockText.toLowerCase().includes('post-recording')) {
+        break // Stop at post-recording section
+      }
+      
+      // If we're in the questions section, add the content
+      if (inQuestionsSection) {
+        questionsContent += blockText
       }
     }
+
+    pageContent = questionsContent.trim()
 
     return {
       id: pageId,

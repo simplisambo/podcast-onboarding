@@ -462,12 +462,6 @@ export default function OnboardingPage() {
                       <Loader2 className="w-6 h-6 animate-spin text-[#2B6951] mr-2" />
                       <span>Loading guest information...</span>
                     </div>
-                  ) : guestError ? (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                      <p className="text-yellow-800">
-                        <strong>Note:</strong> {guestError}. Using default content.
-                      </p>
-                    </div>
                   ) : null}
                   
                   <p>
@@ -487,10 +481,18 @@ export default function OnboardingPage() {
                   
                   {guestData?.pageContent && (
                     <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg mt-6">
-                      <h4 className="font-semibold text-[#2B6951] mb-4">Additional Information:</h4>
+                      <h4 className="font-semibold text-[#2B6951] mb-4">Planned Questions:</h4>
                       <div className="prose prose-sm max-w-none text-gray-700">
                         <pre className="whitespace-pre-wrap font-sans">{guestData.pageContent}</pre>
                       </div>
+                    </div>
+                  )}
+                  
+                  {guestError && (
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-6">
+                      <p className="text-gray-600 text-center">
+                        Questions are under construction!
+                      </p>
                     </div>
                   )}
                 </div>
