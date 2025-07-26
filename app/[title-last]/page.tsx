@@ -300,16 +300,18 @@ export default function OnboardingPage() {
                 This page can help for any pre-recording prep :)
               </motion.p>
               {/* Modern Video Player with Custom Controls */}
-              <motion.div
-                ref={videoContainerRef}
-                className="relative max-w-3xl mx-auto rounded-xl overflow-hidden z-30 group"
-                initial={{ scale: 1, boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.1)" }}
-                animate={{
-                  scale: isPlaying ? 1.1 : 1,
-                  boxShadow: isPlaying ? "0px 10px 30px rgba(0, 0, 0, 0.2)" : "0px 4px 15px rgba(0, 0, 0, 0.1)",
-                }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-              >
+              <div className="flex justify-center items-center w-full px-4">
+                <motion.div
+                  ref={videoContainerRef}
+                  className={`relative max-w-6xl w-full rounded-xl overflow-hidden z-30 group transition-colors duration-300 ${
+                    isPlaying ? 'bg-black/5' : ''
+                  }`}
+                  initial={{ scale: 1 }}
+                  animate={{
+                    scale: isPlaying ? 1.35 : 1,
+                  }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                >
                 {/* Temporary test with basic video element */}
                 <video
                   ref={playerRef as any}
@@ -318,6 +320,7 @@ export default function OnboardingPage() {
                     width: "100%",
                     height: "100%",
                     aspectRatio: "16/9",
+                    display: "block",
                   }}
                   onPlay={() => {
                     console.log("Video started playing")
@@ -401,6 +404,7 @@ export default function OnboardingPage() {
                   </div>
                 )}
               </motion.div>
+              </div>
             </section>
           </ScrollSection>
 
