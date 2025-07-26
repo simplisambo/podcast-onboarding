@@ -86,6 +86,7 @@ function TableOfContents({ isVideoPlaying }: { isVideoPlaying: boolean }) {
     { id: "conversation", label: "Content & Conversation" },
     { id: "tech", label: "Tech Setup" },
     { id: "about", label: "About Nate & Sam" },
+    { id: "latest-episode", label: "Latest Episode" },
   ]
 
   return (
@@ -377,13 +378,15 @@ export default function OnboardingPage() {
           <ScrollSection id="intro">
             <section className="text-center">
               <motion.h2
-                className="text-5xl font-bold mb-4"
+                className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-4"
                 style={{ fontFamily: "var(--font-amaranth)" }}
                 animate={{ opacity: isPlaying ? 0.5 : 1 }}
                 transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
               >
                 Welcome to <span className="text-[#2B6951]">Walking With The Wise</span>
               </motion.h2>
+              {/* Add extra space below the heading */}
+              <div className="mb-16" />
               {/* Modern Video Player with Custom Controls */}
               <div className="flex justify-center items-center w-full px-4">
                 <motion.div
@@ -688,7 +691,7 @@ export default function OnboardingPage() {
                     </p>
                     <div className="flex justify-center space-x-4">
                       <a
-                        href="https://instagram.com/natebreed"
+                        href="https://www.instagram.com/nate.breed22/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[#2B6951] hover:text-[#1e4a3a] transition-colors"
@@ -698,7 +701,7 @@ export default function OnboardingPage() {
                         </svg>
                       </a>
                       <a
-                        href="https://linkedin.com/in/natebreed"
+                        href="https://www.linkedin.com/in/nathanaelbreed/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[#2B6951] hover:text-[#1e4a3a] transition-colors"
@@ -727,7 +730,7 @@ export default function OnboardingPage() {
                     </p>
                     <div className="flex justify-center space-x-4">
                       <a
-                        href="https://instagram.com/samroenicke"
+                        href="https://www.instagram.com/sambodine0/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[#2B6951] hover:text-[#1e4a3a] transition-colors"
@@ -737,7 +740,7 @@ export default function OnboardingPage() {
                         </svg>
                       </a>
                       <a
-                        href="https://linkedin.com/in/samroenicke"
+                        href="https://www.linkedin.com/in/sambodine/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[#2B6951] hover:text-[#1e4a3a] transition-colors"
@@ -764,6 +767,31 @@ export default function OnboardingPage() {
               </footer>
             </ScrollSection>
           </motion.div>
+
+          {/* Latest Episode Preview */}
+          <ScrollSection delay={0.6} id="latest-episode">
+            <section className="py-8">
+              <h3
+                className="text-3xl font-bold text-gray-900 mb-8 text-center"
+                style={{ fontFamily: "var(--font-amaranth)" }}
+              >
+                Latest Episode
+              </h3>
+              <div className="flex justify-center">
+                <iframe
+                  style={{ borderRadius: '12px' }}
+                  src="https://open.spotify.com/embed/show/1fkC3b3Gl2UvE5MTM6v3vF?utm_source=generator"
+                  width="100%"
+                  height="152"
+                  frameBorder="0"
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  loading="lazy"
+                  allowFullScreen
+                  title="Walking With The Wise Podcast Preview"
+                ></iframe>
+              </div>
+            </section>
+          </ScrollSection>
         </main>
       </motion.div>
     </>
