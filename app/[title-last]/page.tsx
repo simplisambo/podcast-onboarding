@@ -128,6 +128,14 @@ export default function OnboardingPage() {
   const progressBarRef = useRef<HTMLDivElement>(null)
   const videoContainerRef = useRef<HTMLDivElement>(null)
 
+  // Function to get time-based greeting
+  const getTimeBasedGreeting = () => {
+    const hour = new Date().getHours()
+    if (hour < 12) return "Good morning,"
+    if (hour < 17) return "Good afternoon,"
+    return "Good evening,"
+  }
+
   // Fetch guest data from Notion
   const { guestData, loading: guestLoading, error: guestError } = useGuestData(lastName)
 
@@ -253,10 +261,10 @@ export default function OnboardingPage() {
       >
         <div className="text-center px-4">
           <div className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight" style={{ fontFamily: "var(--font-amaranth)" }}>
-            <FadeTypewriter text="Welcome, " letterDelay={50} className="text-gray-600 font-normal" />
+            <FadeTypewriter text={`${getTimeBasedGreeting()}, `} letterDelay={50} className="text-gray-600 font-normal" />
             <FadeTypewriter
               text={guestName}
-              delay={450} // Start after "Welcome, " finishes (9 characters * 50ms)
+              delay={450} // Start after greeting finishes
               letterDelay={50}
               className="text-black font-bold"
             />
@@ -295,14 +303,14 @@ export default function OnboardingPage() {
                 animate={{ opacity: isPlaying ? 0.5 : 1 }}
                 transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
               >
-                We can't wait!
+                Welcome to Walking With The Wise!
               </motion.h2>
               <motion.p
                 className="text-lg text-gray-700 mb-8 leading-relaxed max-w-3xl mx-auto"
                 animate={{ opacity: isPlaying ? 0.5 : 1 }}
                 transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
               >
-                This page can help for any pre-recording prep :)
+                Thank you so much for being willing to record an interview with us! Seriously, we know you are very busy and have a ton of responsibility, so it means a ton to us that you're willing to invest 50 minutes into us and our listeners.
               </motion.p>
               {/* Modern Video Player with Custom Controls */}
               <div className="flex justify-center items-center w-full px-4">
