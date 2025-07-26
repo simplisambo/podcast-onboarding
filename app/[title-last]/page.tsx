@@ -604,7 +604,7 @@ export default function OnboardingPage() {
                       Nate
                     </h4>
                     <p className="text-base text-gray-700 leading-relaxed">
-                      He smels gud
+                      I grew up in Las Vegas, NV! I graduated from Liberty in 2025 with a degree in Mechanical Engineering, and I'm working at LU right now on a business accelerator!
                     </p>
                   </div>
                   <div className="text-center">
