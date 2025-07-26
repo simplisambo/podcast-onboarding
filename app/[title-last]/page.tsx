@@ -7,7 +7,7 @@ import { useEffect, useState, useRef } from "react"
 import { motion, useInView } from "framer-motion"
 import ReactPlayer from "react-player"
 import { Button } from "@/components/ui/button"
-import { Users, Mic, Video, ExternalLink } from "lucide-react"
+import { Users, Mic, Video, ExternalLink, Play, Pause } from "lucide-react"
 import { FadeTypewriter } from "@/components/fade-typewriter"
 
 function ScrollSection({
@@ -105,7 +105,13 @@ export default function OnboardingPage() {
   const [showContent, setShowContent] = useState(false)
   const [fadeOut, setFadeOut] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [hasPlayedOnce, setHasPlayedOnce] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
   const playerRef = useRef<ReactPlayer>(null)
+  const progressBarRef = useRef<HTMLDivElement>(null)
+  const videoContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (params["title-last"]) {
@@ -135,11 +141,64 @@ export default function OnboardingPage() {
     }
   }, [params])
 
-  const handleContentClick = () => {
-    if (isPlaying && playerRef.current) {
-      playerRef.current.getInternalPlayer()?.pause()
+  // Handle clicking outside the video to pause
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isPlaying && videoContainerRef.current && !videoContainerRef.current.contains(event.target as Node)) {
+        playerRef.current?.getInternalPlayer()?.pause()
+      }
     }
+
+    if (isPlaying) {
+      document.addEventListener("mousedown", handleClickOutside)
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside)
+      }
+    }
+  }, [isPlaying])
+
+  const handleProgressBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!progressBarRef.current || !playerRef.current) return
+
+    const rect = progressBarRef.current.getBoundingClientRect()
+    const clickX = e.clientX - rect.left
+    const newProgress = clickX / rect.width
+
+    playerRef.current.seekTo(newProgress, "fraction")
+    setProgress(newProgress)
   }
+
+  const handleProgressBarMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    setIsDragging(true)
+    handleProgressBarClick(e)
+  }
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging || !progressBarRef.current || !playerRef.current) return
+
+    const rect = progressBarRef.current.getBoundingClientRect()
+    const clickX = e.clientX - rect.left
+    const newProgress = Math.max(0, Math.min(1, clickX / rect.width))
+
+    playerRef.current.seekTo(newProgress, "fraction")
+    setProgress(newProgress)
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener("mousemove", handleMouseMove)
+      document.addEventListener("mouseup", handleMouseUp)
+
+      return () => {
+        document.removeEventListener("mousemove", handleMouseMove)
+        document.removeEventListener("mouseup", handleMouseUp)
+      }
+    }
+  }, [isDragging])
 
   if (!showContent) {
     return (
@@ -167,13 +226,21 @@ export default function OnboardingPage() {
   return (
     <>
       <TableOfContents isVideoPlaying={isPlaying} />
+
+      {/* White overlay that appears when video is playing */}
+      <motion.div
+        className="fixed inset-0 bg-white pointer-events-none z-20"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isPlaying ? 0.5 : 0 }}
+        transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+      />
+
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
-        className="min-h-screen bg-white"
+        className="min-h-screen bg-white relative"
         style={{ fontFamily: "var(--font-merriweather)" }}
-        onClick={handleContentClick}
       >
         <main className="max-w-4xl mx-auto px-6 py-16 space-y-20">
           {/* Hero Section */}
@@ -182,75 +249,120 @@ export default function OnboardingPage() {
               <motion.h2
                 className="text-5xl font-bold text-gray-900 mb-4"
                 style={{ fontFamily: "var(--font-amaranth)" }}
-                animate={{ opacity: isPlaying ? 0.3 : 1 }}
+                animate={{ opacity: isPlaying ? 0.5 : 1 }}
                 transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
               >
-                We're so excited to have you!
+                We can't wait!
               </motion.h2>
               <motion.p
                 className="text-lg text-gray-700 mb-8 leading-relaxed max-w-3xl mx-auto"
-                animate={{ opacity: isPlaying ? 0.3 : 1 }}
+                animate={{ opacity: isPlaying ? 0.5 : 1 }}
                 transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
               >
-                Thanks for joining us :) Here's a short video intro from Nate & Sam, plus everything you need to know
-                for our chat.
+                This page can help for any pre-recording prep :)
               </motion.p>
-              {/* Modern Video Player with Animation */}
+              {/* Modern Video Player with Custom Controls */}
               <motion.div
-                className="relative max-w-3xl mx-auto rounded-xl overflow-hidden z-20"
-                initial={{
-                  scale: 1,
-                  boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.1)",
-                }}
+                ref={videoContainerRef}
+                className="relative max-w-3xl mx-auto rounded-xl overflow-hidden z-30"
+                initial={{ scale: 1, boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.1)" }}
                 animate={{
-                  scale: isPlaying ? 1.3 : 1,
-                  boxShadow: isPlaying ? "0px 20px 60px rgba(0, 0, 0, 0.4)" : "0px 4px 15px rgba(0, 0, 0, 0.1)",
+                  scale: isPlaying ? 1.1 : 1,
+                  boxShadow: isPlaying ? "0px 10px 30px rgba(0, 0, 0, 0.2)" : "0px 4px 15px rgba(0, 0, 0, 0.1)",
                 }}
-                transition={{
-                  duration: 0.6,
-                  ease: [0.4, 0, 0.2, 1],
-                  layout: true,
-                }}
-                style={{
-                  transformOrigin: "center center",
-                  willChange: "transform, box-shadow",
-                }}
-                onClick={(e) => e.stopPropagation()}
+                transition={{ duration: 0.3, ease: "easeOut" }}
               >
-                <div style={{ transform: "translateZ(0)" }}>
-                  <ReactPlayer
-                    ref={playerRef}
-                    url="https://pub-bd9011e5a7894589b50ac5a4e1765260.r2.dev/Podcast%20Outro.mp4"
-                    width="100%"
-                    height="100%"
-                    controls={true}
-                    style={{
-                      aspectRatio: "16/9",
-                      backfaceVisibility: "hidden",
-                      transform: "translateZ(0)",
-                    }}
-                    config={{
-                      file: {
-                        attributes: {
-                          style: {
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                          },
+                <ReactPlayer
+                  ref={playerRef}
+                  url="https://pub-bd9011e5a7894589b50ac5a4e1765260.r2.dev/Podcast%20Outro.mp4"
+                  width="100%"
+                  height="100%"
+                  controls={false}
+                  playing={isPlaying}
+                  style={{
+                    aspectRatio: "16/9",
+                  }}
+                  config={{
+                    file: {
+                      attributes: {
+                        style: {
+                          width: "100%",
+                          height: "100%",
                         },
                       },
+                    },
+                  }}
+                  onPlay={() => {
+                    setIsPlaying(true)
+                    setHasPlayedOnce(true)
+                  }}
+                  onPause={() => setIsPlaying(false)}
+                  onEnded={() => setIsPlaying(false)}
+                  onProgress={({ played }) => {
+                    if (!isDragging) {
+                      setProgress(played)
+                    }
+                  }}
+                  onDuration={(duration) => setDuration(duration)}
+                  progressInterval={50} // Update every 50ms for smooth progress
+                />
+
+                {/* Custom Play Button - Only show when not playing */}
+                {!isPlaying && (
+                  <motion.button
+                    initial={{ opacity: 1 }}
+                    animate={{ opacity: isPlaying ? 0 : 1 }}
+                    transition={{ duration: 0.2 }}
+                    onClick={() => {
+                      playerRef.current?.getInternalPlayer()?.play()
                     }}
-                    onPlay={() => setIsPlaying(true)}
-                    onPause={() => setIsPlaying(false)}
-                    onEnded={() => setIsPlaying(false)}
-                  />
-                </div>
+                    className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-200"
+                  >
+                    <div className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full p-6 shadow-lg transition-all duration-200">
+                      <Play className="w-12 h-12 text-gray-800 ml-1" fill="currentColor" />
+                    </div>
+                  </motion.button>
+                )}
+
+                {/* Pause Button Overlay - Only show when playing and on hover */}
+                {isPlaying && (
+                  <button
+                    onClick={() => {
+                      playerRef.current?.getInternalPlayer()?.pause()
+                    }}
+                    className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-200 opacity-0 hover:opacity-100"
+                  >
+                    <div className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full p-6 shadow-lg transition-all duration-200">
+                      <Pause className="w-12 h-12 text-gray-800" fill="currentColor" />
+                    </div>
+                  </button>
+                )}
+
+                {/* Custom Progress Bar - Only show after first play */}
+                {hasPlayedOnce && (
+                  <div
+                    ref={progressBarRef}
+                    className="absolute bottom-0 left-0 right-0 h-2 bg-black bg-opacity-20 cursor-pointer"
+                    onMouseDown={handleProgressBarMouseDown}
+                    onClick={handleProgressBarClick}
+                  >
+                    <div
+                      className="h-full bg-white transition-all duration-75"
+                      style={{ width: `${progress * 100}%` }}
+                    ></div>
+                    {/* Progress handle */}
+                    <div
+                      className="absolute top-1/2 transform -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-md opacity-0 hover:opacity-100 transition-opacity duration-200"
+                      style={{ left: `${progress * 100}%`, marginLeft: "-6px" }}
+                    ></div>
+                  </div>
+                )}
               </motion.div>
             </section>
           </ScrollSection>
 
           {/* About the Podcast */}
-          <motion.div animate={{ opacity: isPlaying ? 0.2 : 1 }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}>
+          <motion.div animate={{ opacity: isPlaying ? 0.5 : 1 }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}>
             <ScrollSection delay={0.1} id="audience" useStandardMargin={true}>
               <section className="py-8">
                 <div className="flex items-center mb-8">
@@ -264,9 +376,7 @@ export default function OnboardingPage() {
 
                 <div className="prose prose-lg max-w-none">
                   <p className="text-base text-gray-700 leading-relaxed mb-6">
-                    We're just two normal dudes that have learned the value of spending time with wise people. Our goal
-                    in this podcast is not to just entertain you, but to give you practical and specific takeaways from
-                    some of the wisest Christian leaders we know.
+                    We try to keep in mind this audience demographic:
                   </p>
 
                   <div className="grid md:grid-cols-3 gap-8 mt-8">
@@ -289,7 +399,7 @@ export default function OnboardingPage() {
           </motion.div>
 
           {/* Content & Conversation */}
-          <motion.div animate={{ opacity: isPlaying ? 0.2 : 1 }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}>
+          <motion.div animate={{ opacity: isPlaying ? 0.5 : 1 }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}>
             <ScrollSection delay={0.2} id="conversation">
               <section className="py-8">
                 <div className="flex items-center mb-8">
@@ -303,8 +413,8 @@ export default function OnboardingPage() {
 
                 <div className="space-y-6 text-base text-gray-700 leading-relaxed">
                   <p>
-                    <strong className="text-[#2B6951]">{guestName}, you're the expert!</strong> While we'll have some
-                    questions prepared, feel free to take the conversation wherever you feel most led.
+                    <strong className="text-[#2B6951]">{guestName}, you're the expert!</strong> We'll have some
+                    questions prepared, but feel free to take the conversation wherever you feel most led.
                   </p>
                   <p>
                     Let us know if there's a topic you'd really love to cover. The best episodes are when guests are
@@ -320,7 +430,7 @@ export default function OnboardingPage() {
           </motion.div>
 
           {/* Tech Setup */}
-          <motion.div animate={{ opacity: isPlaying ? 0.2 : 1 }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}>
+          <motion.div animate={{ opacity: isPlaying ? 0.5 : 1 }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}>
             <ScrollSection delay={0.3} id="tech">
               <section className="py-8">
                 <div className="flex items-center mb-8">
@@ -341,11 +451,17 @@ export default function OnboardingPage() {
                       Recording Platform
                     </h4>
                     <p className="text-base text-gray-700 mb-4">
-                      We'll be recording on <strong>Riverside</strong>, a video podcast recording site similar to Zoom.
+                      We'll be recording on <strong>Riverside</strong>, a video podcast recording site sort of like Zoom. No special software needed.
                     </p>
-                    <Button className="bg-[#2B6951] hover:bg-[#1e4a3a] text-white">
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Test Your Setup Here
+                    <Button asChild className="bg-[#2B6951] hover:bg-[#1e4a3a] text-white">
+                      <a
+                        href="https://riverside.fm/studio/walking-with-the-wise-RG9lo?t=8007373b3bef44669da6&gw=on"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Test Your Setup Here
+                      </a>
                     </Button>
                   </div>
 
@@ -360,20 +476,20 @@ export default function OnboardingPage() {
                       <ul className="space-y-2 text-base text-gray-700">
                         <li>• External mic is great if you have one</li>
                         <li>• If not, no worries!</li>
-                        <li>• Avoid Bluetooth AirPods (poor sound quality)</li>
+                        <li>• Avoid AirPods, please (poor sound quality)</li>
                       </ul>
                     </div>
                     <div>
                       <h4
-                        className="text-xl font-semibent text-[#2B6951] mb-3"
+                        className="text-xl font-semibold text-[#2B6951] mb-3"
                         style={{ fontFamily: "var(--font-amaranth)" }}
                       >
-                        Environment
+                        Environment preferences
                       </h4>
                       <ul className="space-y-2 text-base text-gray-700">
-                        <li>• Choose a quiet space</li>
-                        <li>• Decent lighting preferred</li>
+                        <li>• Any pleasant background, like a living room or studio</li>
                         <li>• Natural light or ring light is ideal</li>
+                        <li>• Whatever you have is fine, though!</li>
                       </ul>
                     </div>
                   </div>
@@ -383,7 +499,7 @@ export default function OnboardingPage() {
           </motion.div>
 
           {/* About Nate & Sam */}
-          <motion.div animate={{ opacity: isPlaying ? 0.2 : 1 }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}>
+          <motion.div animate={{ opacity: isPlaying ? 0.5 : 1 }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}>
             <ScrollSection delay={0.4} id="about">
               <section className="py-8">
                 <h3
@@ -395,9 +511,11 @@ export default function OnboardingPage() {
 
                 <div className="grid md:grid-cols-2 gap-12">
                   <div className="text-center">
-                    <div className="w-32 h-32 bg-gray-200 rounded-full mx-auto mb-6 flex items-center justify-center">
-                      <span className="text-4xl font-bold text-gray-400">N</span>
-                    </div>
+                    <img
+                      src="/nate.png"
+                      alt="Nate, one of the podcast hosts"
+                      className="w-32 h-32 rounded-full mx-auto mb-6 object-cover"
+                    />
                     <h4
                       className="text-xl font-semibold text-[#2B6951] mb-3"
                       style={{ fontFamily: "var(--font-amaranth)" }}
@@ -405,15 +523,15 @@ export default function OnboardingPage() {
                       Nate
                     </h4>
                     <p className="text-base text-gray-700 leading-relaxed">
-                      Passionate about connecting with wise leaders and extracting practical insights that can transform
-                      lives. Believes deeply in the power of mentorship and learning from those who've walked the path
-                      before us.
+                      I'm from Vegas and that's my whole personality.
                     </p>
                   </div>
                   <div className="text-center">
-                    <div className="w-32 h-32 bg-gray-200 rounded-full mx-auto mb-6 flex items-center justify-center">
-                      <span className="text-4xl font-bold text-gray-400">S</span>
-                    </div>
+                    <img
+                      src="/sam.png"
+                      alt="Sam, one of the podcast hosts"
+                      className="w-32 h-32 rounded-full mx-auto mb-6 object-cover"
+                    />
                     <h4
                       className="text-xl font-semibold text-[#2B6951] mb-3"
                       style={{ fontFamily: "var(--font-amaranth)" }}
@@ -421,9 +539,8 @@ export default function OnboardingPage() {
                       Sam
                     </h4>
                     <p className="text-base text-gray-700 leading-relaxed">
-                      Dedicated to creating meaningful conversations that go beyond surface-level discussions. Loves
-                      discovering the stories and experiences that have shaped our guests into the leaders they are
-                      today.
+                      I grew up partly in North Africa and partly in Kentucky. I graduated from Liberty in 2025 and
+                      currently work at Microsoft doing cybersecurity. I love to play devil's advocate in the interview.
                     </p>
                   </div>
                 </div>
@@ -432,7 +549,7 @@ export default function OnboardingPage() {
           </motion.div>
 
           {/* Footer */}
-          <motion.div animate={{ opacity: isPlaying ? 0.2 : 1 }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}>
+          <motion.div animate={{ opacity: isPlaying ? 0.5 : 1 }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}>
             <ScrollSection delay={0.5} useStandardMargin={true}>
               <footer className="text-center py-12 border-t border-gray-100">
                 <p className="text-base text-gray-600 mb-4">
