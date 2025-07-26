@@ -620,8 +620,8 @@ export default function OnboardingPage() {
                       Sam
                     </h4>
                     <p className="text-base text-gray-700 leading-relaxed">
-                      I grew up partly in North Africa and partly in Kentucky. I graduated from Liberty in 2025 and
-                      currently work at Microsoft doing cybersecurity. I love to play devil's advocate in the interview.
+                      Hey! I grew up partly in North Africa and partly in Kentucky. I graduated from Liberty in 2025 and
+                      currently work at Microsoft doing cybersecurity. I love to play devil's advocate in the interview!
                     </p>
                   </div>
                 </div>
