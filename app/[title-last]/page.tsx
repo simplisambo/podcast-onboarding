@@ -145,7 +145,14 @@ export default function OnboardingPage() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (isPlaying && videoContainerRef.current && !videoContainerRef.current.contains(event.target as Node)) {
-        playerRef.current?.getInternalPlayer()?.pause()
+        if (playerRef.current) {
+          const internalPlayer = playerRef.current.getInternalPlayer()
+          if (internalPlayer && typeof internalPlayer.pause === "function") {
+            internalPlayer.pause()
+          } else {
+            setIsPlaying(false)
+          }
+        }
       }
     }
 
@@ -314,7 +321,15 @@ export default function OnboardingPage() {
                     animate={{ opacity: isPlaying ? 0 : 1 }}
                     transition={{ duration: 0.2 }}
                     onClick={() => {
-                      playerRef.current?.getInternalPlayer()?.play()
+                      if (playerRef.current) {
+                        const internalPlayer = playerRef.current.getInternalPlayer()
+                        if (internalPlayer && typeof internalPlayer.play === "function") {
+                          internalPlayer.play()
+                        } else {
+                          // Fallback: use ReactPlayer's built-in method
+                          setIsPlaying(true)
+                        }
+                      }
                     }}
                     className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-200"
                   >
@@ -328,7 +343,15 @@ export default function OnboardingPage() {
                 {isPlaying && (
                   <button
                     onClick={() => {
-                      playerRef.current?.getInternalPlayer()?.pause()
+                      if (playerRef.current) {
+                        const internalPlayer = playerRef.current.getInternalPlayer()
+                        if (internalPlayer && typeof internalPlayer.pause === "function") {
+                          internalPlayer.pause()
+                        } else {
+                          // Fallback: use ReactPlayer's built-in method
+                          setIsPlaying(false)
+                        }
+                      }
                     }}
                     className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-200 opacity-0 hover:opacity-100"
                   >
@@ -451,7 +474,8 @@ export default function OnboardingPage() {
                       Recording Platform
                     </h4>
                     <p className="text-base text-gray-700 mb-4">
-                      We'll be recording on <strong>Riverside</strong>, a video podcast recording site sort of like Zoom. No special software needed.
+                      We'll be recording on <strong>Riverside</strong>, a video podcast recording site sort of like
+                      Zoom. No special software needed.
                     </p>
                     <Button asChild className="bg-[#2B6951] hover:bg-[#1e4a3a] text-white">
                       <a
