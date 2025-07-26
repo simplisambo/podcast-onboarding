@@ -604,7 +604,7 @@ export default function OnboardingPage() {
                       Nate
                     </h4>
                     <p className="text-base text-gray-700 leading-relaxed">
-                      I'm from Vegas and that's my whole personality.
+                      He smels gud
                     </p>
                   </div>
                   <div className="text-center">
