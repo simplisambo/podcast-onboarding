@@ -37,8 +37,19 @@ export function FadeTypewriter({
   }, [currentIndex, text, delay, letterDelay, onComplete])
 
   return (
-    <span className={`${className} animate-fade-in`} style={{ animationDelay: `${delay / 1000}s` }}>
-      {displayedText}
+    <span className={className}>
+      {displayedText.split("").map((char, index) => (
+        <span
+          key={`char-${index}`}
+          className="inline-block animate-fade-in"
+          style={{
+            animationDelay: `${(delay + index * letterDelay) / 1000}s`,
+            animationFillMode: "both",
+          }}
+        >
+          {char === " " ? "\u00A0" : char}
+        </span>
+      ))}
     </span>
   )
 }
