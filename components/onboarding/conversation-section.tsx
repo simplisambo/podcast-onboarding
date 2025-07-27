@@ -109,7 +109,7 @@ export function ConversationSection({ isPlaying, guestName, lastName }: Conversa
                   </div>
                   
                   <p className="mt-6 font-medium text-[#2B6951]">
-                    Please stay on until Riverside marks the video as uploaded!
+                    Please stay on until Riverside marks the video as uploaded :)
                   </p>
                 </div>
               </div>
