@@ -9,13 +9,14 @@ interface SocialProofSectionProps {
 
 export function SocialProofSection({ isPlaying }: SocialProofSectionProps) {
   const messages = [
-    {
-      text: "Phenomenal topics covered, phenomenal featured guests with loads of wisdom, and phenomenal hosts who actively set the bar high for this generation.",
-      name: "Cooper"
-    },
+
     {
       text: "I have really been enjoying it ... trying to diligently strengthen my relationship with God, and it has had a lot of things I needed to hear.",
       name: "Chynah"
+    },
+    {
+      text: "Phenomenal topics covered, phenomenal featured guests with loads of wisdom, and phenomenal hosts who actively set the bar high for this generation.",
+      name: "Cooper"
     },
     {
       text: "Really good pod, that guy [David Benham, a guest] has a lot of substance. Really humbling to listen to such an impressive guy.",
@@ -34,7 +35,7 @@ export function SocialProofSection({ isPlaying }: SocialProofSectionProps) {
       animate={{ opacity: isPlaying ? 0.5 : 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
     >
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
         {messages.map((message, index) => (
           <motion.div
             key={index}
