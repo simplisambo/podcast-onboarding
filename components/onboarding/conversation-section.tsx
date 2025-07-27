@@ -57,7 +57,7 @@ export function ConversationSection({ isPlaying, guestName, lastName }: Conversa
           
           {guestData?.pageContent && (
             <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg mt-6" style={{ fontSize: "1rem" }}>
-              <h4 className="font-semibold text-[#2B6951] mb-6 text-center">Structure</h4>
+              <h4 className="font-semibold text-[#2B6951] mb-2 text-center" style={{ fontSize: "1.25rem" }}>Structure</h4>
               <div className="space-y-6">
                 <div className="space-y-3">
                   <p className="font-medium text-[#2B6951] mb-2" style={{ fontSize: "1rem", lineHeight: "1.5" }}>Questions</p>
@@ -71,7 +71,9 @@ export function ConversationSection({ isPlaying, guestName, lastName }: Conversa
                         
                         for (let i = 0; i < lines.length; i++) {
                           const line = lines[i].trim()
-                          if (line.startsWith('#') && line.toLowerCase().includes('close')) {
+                          // Check for lines that start with # and contain 'close', OR lines that are just 'close'
+                          if ((line.startsWith('#') && line.toLowerCase().includes('close')) || 
+                              line.toLowerCase() === 'close') {
                             // Find the position of this line in the original content
                             const lineIndex = originalContent.indexOf(lines[i])
                             if (lineIndex !== -1) {

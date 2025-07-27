@@ -207,8 +207,8 @@ export default function OnboardingPage() {
       <motion.div
         className="hidden xl:block fixed top-8 left-8 z-30"
         initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
+        animate={{ opacity: isPlaying ? 0.5 : 1, scale: 1 }}
+        transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
       >
         <img
           src="/logowwtw.png"
@@ -222,7 +222,7 @@ export default function OnboardingPage() {
 
       {/* White overlay that appears when video is playing */}
       <motion.div
-        className="fixed inset-0 bg-white pointer-events-none z-20"
+        className="fixed inset-0 bg-white pointer-events-none z-25"
         initial={{ opacity: 0 }}
         animate={{ opacity: isPlaying ? 0.5 : 0 }}
         transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
