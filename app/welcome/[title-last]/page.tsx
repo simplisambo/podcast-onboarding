@@ -205,7 +205,7 @@ export default function OnboardingPage() {
     <>
       {/* Logo in top left corner */}
       <motion.div
-        className="fixed top-8 left-8 z-30"
+        className="hidden xl:block fixed top-8 left-8 z-30"
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, delay: 0.2 }}
