@@ -22,7 +22,7 @@ export function ConversationSection({ isPlaying, guestName, lastName }: Conversa
 
   return (
     <motion.div animate={{ opacity: isPlaying ? 0.5 : 1 }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}>
-      <section className="py-8">
+      <section>
         <div className="flex items-center mb-8">
           <div className="w-12 h-12 bg-[#2B6951] rounded-full flex items-center justify-center mr-4">
             <Mic className="w-6 h-6 text-white" />
@@ -110,9 +110,6 @@ export function ConversationSection({ isPlaying, guestName, lastName }: Conversa
                     </ul>
                   </div>
                   
-                  <p className="mt-6 font-medium text-[#2B6951]">
-                    Please stay on until Riverside marks the video as uploaded :)
-                  </p>
                 </div>
               </div>
             </div>

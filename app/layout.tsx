@@ -1,6 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Amaranth, Merriweather } from "next/font/google"
+import { Amaranth, Merriweather, Inter } from "next/font/google"
 import "./globals.css"
 import { Analytics } from "@vercel/analytics/next"
 
@@ -16,6 +16,12 @@ const merriweather = Merriweather({
   variable: "--font-merriweather",
 })
 
+const inter = Inter({
+  weight: ["400", "500", "600"],
+  subsets: ["latin"],
+  variable: "--font-inter",
+})
+
 export const metadata: Metadata = {
   title: "Walking with the Wise - Guest Onboarding",
   description: "Personalized onboarding for podcast guests",
@@ -29,7 +35,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${amaranth.variable} ${merriweather.variable} antialiased`}>
+      <body className={`${amaranth.variable} ${merriweather.variable} ${inter.variable} antialiased`}>
         {children}
         <Analytics />
       </body>
