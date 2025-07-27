@@ -13,7 +13,7 @@ interface FadeTypewriterProps {
 export function FadeTypewriter({
   text,
   delay = 0,
-  letterDelay = 50, // Reduced to 50ms for overlapping effect
+  letterDelay = 50,
   className = "",
   onComplete,
 }: FadeTypewriterProps) {
@@ -37,19 +37,8 @@ export function FadeTypewriter({
   }, [currentIndex, text, delay, letterDelay, onComplete])
 
   return (
-    <span className={className}>
-      {displayedText.split("").map((char, index) => (
-        <span
-          key={index}
-          className="inline-block animate-fade-in"
-          style={{
-            animationDelay: `${(delay + index * letterDelay) / 1000}s`,
-            animationFillMode: "both",
-          }}
-        >
-          {char === " " ? "\u00A0" : char}
-        </span>
-      ))}
+    <span className={`${className} animate-fade-in`} style={{ animationDelay: `${delay / 1000}s` }}>
+      {displayedText}
     </span>
   )
 }

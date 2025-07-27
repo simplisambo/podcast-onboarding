@@ -35,7 +35,32 @@ export function SocialProofSection({ isPlaying }: SocialProofSectionProps) {
       animate={{ opacity: isPlaying ? 0.5 : 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
     >
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+      {/* Mobile: 2 messages */}
+      <div className="grid grid-cols-2 md:hidden gap-4 items-center">
+        {messages.slice(0, 2).map((message, index) => (
+          <motion.div
+            key={index}
+            className="flex justify-start"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.2 }}
+          >
+            <div className="w-full">
+              <div className="bg-gray-200 rounded-2xl rounded-bl-md px-4 py-2 shadow-sm">
+                <p className="text-sm text-gray-800 leading-relaxed text-left" style={{ fontFamily: "var(--font-inter)" }}>
+                  {message.text}
+                </p>
+              </div>
+              <div className="mt-1">
+                <span className="text-xs text-gray-500 font-medium" style={{ fontFamily: "var(--font-inter)" }}>{message.name}</span>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Desktop: 3 messages */}
+      <div className="hidden md:grid md:grid-cols-3 gap-4 items-center">
         {messages.map((message, index) => (
           <motion.div
             key={index}
