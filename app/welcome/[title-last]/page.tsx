@@ -6,6 +6,8 @@ import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 
 import { FadeTypewriter } from "@/components/fade-typewriter"
+import { useGuestData } from "@/hooks/use-guest-data"
+import { formatRecordingDate } from "@/lib/utils"
 import {
   ScrollSection,
   TableOfContents,
@@ -40,13 +42,16 @@ export default function OnboardingPage() {
   const [progress, setProgress] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
 
+  // Fetch guest data
+  const { guestData } = useGuestData(lastName)
+
   useEffect(() => {
     if (params["title-last"]) {
       const nameSlug = params["title-last"] as string
       const nameParts = nameSlug.split("-")
       
       // List of common titles
-      const titles = ["prof", "dr", "mr", "ms", "mrs", "miss", "rev", "sir", "madam", "captain", "colonel", "general", "admiral", "senator", "governor", "president", "ambassador", "bishop", "pastor", "father", "sister", "brother"]
+      const titles = ["prof", "dr", "mr", "ms", "mrs", "miss", "rev"]
       
       const firstWord = nameParts[0].toLowerCase()
       
@@ -114,6 +119,26 @@ export default function OnboardingPage() {
     }
   }, [params])
 
+  // Generate the intro text with recording date if available
+  const getIntroText = () => {
+    const baseText = (
+      <>
+        <strong className="text-[#2B6951]">{guestName}</strong>, thank you so much for being willing to record an interview with us! Seriously, we know you are very busy and have a ton of responsibility, so it means a lot to us that you're willing to invest 50 minutes into us and our listeners.
+      </>
+    )
+    
+    if (guestData?.recordingDate) {
+      const formattedDate = formatRecordingDate(guestData.recordingDate)
+      return (
+        <>
+          <strong className="text-[#2B6951]">{guestName}</strong>, thank you so much for being willing to record an interview with us! Seriously, we know you are very busy and have a ton of responsibility, so it means a lot to us that you're willing to invest 50 minutes into us and our listeners {formattedDate}.
+        </>
+      )
+    }
+    
+    return baseText
+  }
+
   if (!showThankYou) {
     return (
       <motion.div
@@ -150,7 +175,7 @@ export default function OnboardingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5 }}
           >
-            <strong className="text-[#2B6951]">{guestName}</strong>, thank you so much for being willing to record an interview with us! Seriously, we know you are very busy and have a ton of responsibility, so it means a lot to us that you're willing to invest 50 minutes into us and our listeners.
+            {getIntroText()}
           </motion.p>
           <motion.p
             className="text-lg text-gray-700 leading-relaxed max-w-3xl text-left"

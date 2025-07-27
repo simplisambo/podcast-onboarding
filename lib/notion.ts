@@ -8,6 +8,7 @@ export interface GuestData {
   id: string
   name: string
   pageContent?: string
+  recordingDate?: string
 }
 
 export async function findGuestByLastName(lastName: string): Promise<GuestData | null> {
@@ -53,6 +54,12 @@ export async function findGuestByLastName(lastName: string): Promise<GuestData |
     // Get the page ID and fetch the full page content
     const pageId = exactMatch.id
     const pageProperties = exactMatch.properties
+    
+    // Extract recording date from properties
+    let recordingDate: string | undefined
+    if (pageProperties['Recording Date'] && pageProperties['Recording Date'].date) {
+      recordingDate = pageProperties['Recording Date'].date.start
+    }
     
     // Fetch the page content using block children
     const blocksResponse = await notion.blocks.children.list({
@@ -158,6 +165,7 @@ export async function findGuestByLastName(lastName: string): Promise<GuestData |
       id: pageId,
       name: pageProperties.Name?.title?.[0]?.plain_text || pageProperties.Name?.rich_text?.[0]?.plain_text || '',
       pageContent: pageContent.trim(),
+      recordingDate: recordingDate,
     }
   } catch (error) {
     console.error('Error fetching guest data from Notion:', error)
