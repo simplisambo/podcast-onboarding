@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 
 interface FadeTypewriterProps {
   text: string
@@ -17,28 +17,30 @@ export function FadeTypewriter({
   className = "",
   onComplete,
 }: FadeTypewriterProps) {
-  const [displayedText, setDisplayedText] = useState("")
+  // Track how many characters should currently be visible
   const [currentIndex, setCurrentIndex] = useState(0)
 
   useEffect(() => {
     if (currentIndex < text.length) {
       const timer = setTimeout(
-        () => {
-          setDisplayedText((prev) => prev + text[currentIndex])
-          setCurrentIndex((prev) => prev + 1)
-        },
+        () => setCurrentIndex((prev) => prev + 1),
         currentIndex === 0 ? delay : letterDelay,
       )
 
       return () => clearTimeout(timer)
-    } else if (currentIndex === text.length && onComplete) {
+    }
+
+    if (currentIndex === text.length && onComplete) {
       onComplete()
     }
-  }, [currentIndex, text, delay, letterDelay, onComplete])
+  }, [currentIndex, text.length, delay, letterDelay, onComplete])
+
+  // Memoize the substring to avoid unnecessary splits on every render
+  const visibleText = useMemo(() => text.slice(0, currentIndex), [text, currentIndex])
 
   return (
     <span className={className}>
-      {displayedText.split("").map((char, index) => (
+      {visibleText.split("").map((char, index) => (
         <span
           key={`char-${index}`}
           className="inline-block animate-fade-in"
