@@ -10,17 +10,21 @@ interface SocialProofSectionProps {
 export function SocialProofSection({ isPlaying }: SocialProofSectionProps) {
   const messages = [
     {
-      text: "This podcast has completely changed how I think about wisdom and leadership. The guests are incredible!",
-      name: "Nate"
+      text: "Phenomenal topics covered, phenomenal featured guests with loads of wisdom, and phenomenal hosts who actively set the bar high for this generation.",
+      name: "Cooper"
     },
     {
-      text: "Just finished listening to the latest episode. Nate and Sam ask such thoughtful questions. Really appreciate the depth.",
+      text: "I have really been enjoying it ... trying to diligently strengthen my relationship with God, and it has had a lot of things I needed to hear.",
       name: "Chynah"
     },
     {
-      text: "The way they break down complex ideas into practical wisdom is amazing. My go-to podcast now.",
+      text: "Really good pod, that guy [David Benham, a guest] has a lot of substance. Really humbling to listen to such an impressive guy.",
       name: "Ike"
-    }
+    },
+    /*{
+      text: " A very thought-provoking podcast! I appreciated the thoughtful discussion on a neglected topic. The practicality was helpful too.",
+      name: "Reagan"
+    }*/
   ]
 
   return (
