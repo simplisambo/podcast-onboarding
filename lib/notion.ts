@@ -116,6 +116,28 @@ export async function findGuestByLastName(lastName: string): Promise<GuestData |
               if (child.type === 'numbered_list_item' && child.numbered_list_item.rich_text.length > 0) {
                 const subText = child.numbered_list_item.rich_text.map((text: any) => text.plain_text).join('')
                 blockText += '  ' + String.fromCharCode(subCounter) + '. ' + subText + '\n'
+                
+                // Fetch third-level children if this child has them
+                if (child.has_children) {
+                  try {
+                    const grandChildrenResponse = await notion.blocks.children.list({
+                      block_id: child.id,
+                    })
+                    
+                    // Add third-level items with roman numerals
+                    let grandChildCounter = 1
+                    for (const grandChild of grandChildrenResponse.results) {
+                      if (grandChild.type === 'numbered_list_item' && grandChild.numbered_list_item.rich_text.length > 0) {
+                        const grandChildText = grandChild.numbered_list_item.rich_text.map((text: any) => text.plain_text).join('')
+                        blockText += '    ' + grandChildCounter + '. ' + grandChildText + '\n'
+                        grandChildCounter++
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Error fetching grandchildren:', error)
+                  }
+                }
+                
                 subCounter++
               }
             }

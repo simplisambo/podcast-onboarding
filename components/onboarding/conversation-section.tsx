@@ -56,10 +56,62 @@ export function ConversationSection({ isPlaying, guestName, lastName }: Conversa
           </p>
           
           {guestData?.pageContent && (
-            <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg mt-6">
-              <h4 className="font-semibold text-[#2B6951] mb-4">Planned Questions:</h4>
-              <div className="prose prose-sm max-w-none text-gray-700">
-                <pre className="whitespace-pre-wrap font-sans">{removeMarkdownHeaders(guestData.pageContent)}</pre>
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg mt-6" style={{ fontSize: "1rem" }}>
+              <h4 className="font-semibold text-[#2B6951] mb-6 text-center">Structure</h4>
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <p className="font-medium text-[#2B6951] mb-2" style={{ fontSize: "1rem", lineHeight: "1.5" }}>Questions</p>
+                  {/* Original content from Notion, ending before "close" */}
+                  <div className="prose prose-sm max-w-none text-gray-700">
+                    <div className="whitespace-pre-wrap" style={{ fontFamily: "serif" }}>
+                      {(() => {
+                        const originalContent = guestData.pageContent
+                        const lines = originalContent.split('\n')
+                        let endIndex = originalContent.length
+                        
+                        for (let i = 0; i < lines.length; i++) {
+                          const line = lines[i].trim()
+                          if (line.startsWith('#') && line.toLowerCase().includes('close')) {
+                            // Find the position of this line in the original content
+                            const lineIndex = originalContent.indexOf(lines[i])
+                            if (lineIndex !== -1) {
+                              endIndex = lineIndex
+                              break
+                            }
+                          }
+                        }
+                        
+                        // Get the content up to the close line, then remove headers
+                        const contentBeforeClose = originalContent.substring(0, endIndex)
+                        return removeMarkdownHeaders(contentBeforeClose).trim()
+                      })()}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Additional structure content */}
+                <div className="pt-6" style={{ fontFamily: "serif" }}>
+                  <div className="space-y-3 mb-6">
+                    <p className="font-medium text-[#2B6951] mb-2" style={{ fontSize: "1rem", lineHeight: "1.5" }}>Consistent three rapid-fire questions:</p>
+                    <ul className="list-disc list-inside ml-0">
+                      <li>What's your favorite Bible verse and why?</li>
+                      <li>What one book has most changed your life?</li>
+                      <li>What one action would you most challenge our listeners to take?</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <p className="font-medium text-[#2B6951] mb-2" style={{ fontSize: "1rem", lineHeight: "1.5" }}>Close</p>
+                    <ul className="list-disc list-inside ml-0">
+                      <li>What can listeners find out more?</li>
+                      <li>A host prays to close</li>
+                    </ul>
+                  </div>
+                  
+                  <p className="mt-6 font-medium text-[#2B6951]">
+                    Please stay on until Riverside marks the video as uploaded!
+                  </p>
+                </div>
               </div>
             </div>
           )}
