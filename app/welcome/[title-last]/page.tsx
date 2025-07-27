@@ -2,116 +2,28 @@
 
 import React from "react"
 import { useParams } from "next/navigation"
-import { useEffect, useState, useRef } from "react"
-import { motion, useInView } from "framer-motion"
+import { useEffect, useState } from "react"
+import { motion } from "framer-motion"
 
-import { Button } from "@/components/ui/button"
-import { Users, Mic, Video, ExternalLink, Play, Pause, Loader2 } from "lucide-react"
 import { FadeTypewriter } from "@/components/fade-typewriter"
-import { useGuestData } from "@/hooks/use-guest-data"
+import {
+  ScrollSection,
+  TableOfContents,
+  HeroSection,
+  AudienceSection,
+  ConversationSection,
+  TechSection,
+  AboutSection,
+  FooterSection,
+  LatestEpisodeSection,
+} from "@/components/onboarding"
 
-// Function to remove markdown headers from Notion content
-function removeMarkdownHeaders(content: string): string {
-  return content.replace(/^#+\s*/gm, '')
-}
-
-function ScrollSection({
-  children,
-  delay = 0,
-  id,
-  useStandardMargin = false,
-}: {
-  children: React.ReactNode
-  delay?: number
-  id?: string
-  useStandardMargin?: boolean
-}) {
-  const ref = useRef(null)
-  const isInView = useInView(ref, {
-    once: true,
-    margin: useStandardMargin ? "-100px" : "-20%",
-  })
-
-  return (
-    <motion.div
-      ref={ref}
-      id={id}
-      initial={{ opacity: 0, scale: 0.95, y: 50 }}
-      animate={isInView ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.95, y: 50 }}
-      transition={{ duration: 0.8, delay, ease: "easeOut" }}
-    >
-      {children}
-    </motion.div>
-  )
-}
-
-function TableOfContents({ isVideoPlaying }: { isVideoPlaying: boolean }) {
-  const [activeSection, setActiveSection] = useState("intro")
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const sections = ["intro", "audience", "conversation", "tech", "about"]
-      const windowHeight = window.innerHeight
-      const scrollPosition = window.scrollY + windowHeight / 2 // Middle of the screen
-
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const element = document.getElementById(sections[i])
-        if (element) {
-          const elementTop = element.offsetTop
-          const elementBottom = elementTop + element.offsetHeight
-          
-          // Check if the middle of the screen is within this section
-          if (scrollPosition >= elementTop && scrollPosition <= elementBottom) {
-            setActiveSection(sections[i])
-            break
-          }
-        }
-      }
-    }
-
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
-
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
-    }
-  }
-
-  const sections = [
-    { id: "intro", label: "Intro" },
-    { id: "audience", label: "About our Audience" },
-    { id: "conversation", label: "Content & Conversation" },
-    { id: "tech", label: "Tech Setup" },
-    { id: "about", label: "About Nate & Sam" },
-    { id: "latest-episode", label: "Latest Episode" },
-  ]
-
-  return (
-    <motion.div
-      className="hidden xl:block fixed left-8 top-1/2 transform -translate-y-1/2 z-10"
-      animate={{ opacity: isVideoPlaying ? 0 : 1 }}
-      transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-    >
-      <nav className="space-y-4">
-        {sections.map((section) => (
-          <button
-            key={section.id}
-            onClick={() => scrollToSection(section.id)}
-            className={`block text-sm transition-all duration-300 ease-out hover:text-black ${
-              activeSection === section.id 
-                ? "text-black font-medium text-base scale-110" 
-                : "text-gray-600 scale-100"
-            }`}
-          >
-            {section.label}
-          </button>
-        ))}
-      </nav>
-    </motion.div>
-  )
+// Function to get time-based greeting
+const getTimeBasedGreeting = () => {
+  const hour = new Date().getHours()
+  if (hour < 12) return "Good morning,"
+  if (hour < 17) return "Good afternoon,"
+  return "Good evening,"
 }
 
 export default function OnboardingPage() {
@@ -127,20 +39,6 @@ export default function OnboardingPage() {
   const [hasPlayedOnce, setHasPlayedOnce] = useState(false)
   const [progress, setProgress] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
-  const playerRef = useRef<HTMLVideoElement>(null)
-  const progressBarRef = useRef<HTMLDivElement>(null)
-  const videoContainerRef = useRef<HTMLDivElement>(null)
-
-  // Function to get time-based greeting
-  const getTimeBasedGreeting = () => {
-    const hour = new Date().getHours()
-    if (hour < 12) return "Good morning,"
-    if (hour < 17) return "Good afternoon,"
-    return "Good evening,"
-  }
-
-  // Fetch guest data from Notion
-  const { guestData, loading: guestLoading, error: guestError } = useGuestData(lastName)
 
   useEffect(() => {
     if (params["title-last"]) {
@@ -173,6 +71,13 @@ export default function OnboardingPage() {
       setGuestName(formattedName)
       setLastName(extractedLastName)
 
+      // Check if guest name is "dev" - if so, skip all animations and go straight to main content
+      if (formattedName.toLowerCase() === "dev") {
+        setShowThankYou(true)
+        setShowRestOfPage(true)
+        return
+      }
+
       // Start fade out after 3 seconds
       const fadeTimer = setTimeout(() => setFadeOut(true), 3000)
 
@@ -200,82 +105,14 @@ export default function OnboardingPage() {
       // Show rest of page 8 seconds after thank you starts (total 13 seconds)
       const restOfPageTimer = setTimeout(() => setShowRestOfPage(true), 13000)
 
-              return () => {
-          clearTimeout(fadeTimer)
-          clearTimeout(thankYouTimer)
-          clearTimeout(progressStartTimer)
-          clearTimeout(restOfPageTimer)
-        }
+      return () => {
+        clearTimeout(fadeTimer)
+        clearTimeout(thankYouTimer)
+        clearTimeout(progressStartTimer)
+        clearTimeout(restOfPageTimer)
+      }
     }
   }, [params])
-
-  // Handle clicking outside the video to pause
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (isPlaying && videoContainerRef.current && !videoContainerRef.current.contains(event.target as Node)) {
-        const video = playerRef.current as HTMLVideoElement
-        if (video) {
-          video.pause()
-        }
-      }
-    }
-
-    if (isPlaying) {
-      document.addEventListener("mousedown", handleClickOutside)
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside)
-      }
-    }
-  }, [isPlaying])
-
-  const handleProgressBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!progressBarRef.current || !playerRef.current) return
-
-    const rect = progressBarRef.current.getBoundingClientRect()
-    const clickX = e.clientX - rect.left
-    const newProgress = clickX / rect.width
-
-    const video = playerRef.current as HTMLVideoElement
-    if (video && video.duration > 0) {
-      video.currentTime = newProgress * video.duration
-      setProgress(newProgress)
-    }
-  }
-
-  const handleProgressBarMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    setIsDragging(true)
-    handleProgressBarClick(e)
-  }
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging || !progressBarRef.current || !playerRef.current) return
-
-    const rect = progressBarRef.current.getBoundingClientRect()
-    const clickX = e.clientX - rect.left
-    const newProgress = Math.max(0, Math.min(1, clickX / rect.width))
-
-    const video = playerRef.current as HTMLVideoElement
-    if (video && video.duration > 0) {
-      video.currentTime = newProgress * video.duration
-      setProgress(newProgress)
-    }
-  }
-
-  const handleMouseUp = () => {
-    setIsDragging(false)
-  }
-
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener("mousemove", handleMouseMove)
-      document.addEventListener("mouseup", handleMouseUp)
-
-      return () => {
-        document.removeEventListener("mousemove", handleMouseMove)
-        document.removeEventListener("mouseup", handleMouseUp)
-      }
-    }
-  }, [isDragging])
 
   if (!showThankYou) {
     return (
@@ -376,421 +213,50 @@ export default function OnboardingPage() {
         <main className="max-w-4xl mx-auto px-6 py-16 space-y-20">
           {/* Hero Section */}
           <ScrollSection id="intro">
-            <section className="text-center">
-              <motion.h2
-                className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-4"
-                style={{ fontFamily: "var(--font-amaranth)" }}
-                animate={{ opacity: isPlaying ? 0.5 : 1 }}
-                transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-              >
-                Welcome to <span className="text-[#2B6951]">Walking With The Wise</span>
-              </motion.h2>
-              {/* Add extra space below the heading */}
-              <div className="mb-16" />
-              {/* Modern Video Player with Custom Controls */}
-              <div className="flex justify-center items-center w-full px-4">
-                <motion.div
-                  ref={videoContainerRef}
-                  className={`relative max-w-6xl w-full rounded-xl overflow-hidden z-30 group transition-colors duration-300 ${
-                    isPlaying ? 'bg-black/5' : ''
-                  }`}
-                  initial={{ scale: 1 }}
-                  animate={{
-                    scale: isPlaying ? 1.35 : 1,
-                  }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                >
-                {/* Temporary test with basic video element */}
-                <video
-                  ref={playerRef as any}
-                  src="https://pub-bd9011e5a7894589b50ac5a4e1765260.r2.dev/Podcast%20Outro.mp4"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    aspectRatio: "16/9",
-                    display: "block",
-                  }}
-                  onPlay={() => {
-                    console.log("Video started playing")
-                    setIsPlaying(true)
-                    setHasPlayedOnce(true)
-                  }}
-                  onPause={() => {
-                    console.log("Video paused")
-                    setIsPlaying(false)
-                  }}
-                  onEnded={() => {
-                    console.log("Video ended")
-                    setIsPlaying(false)
-                  }}
-                  onError={(error) => {
-                    console.error("Video error:", error)
-                  }}
-                  onTimeUpdate={(e) => {
-                    const video = e.target as HTMLVideoElement
-                    if (video.duration > 0 && !isDragging) {
-                      setProgress(video.currentTime / video.duration)
-                    }
-                  }}
-                />
-
-                {/* Custom Play Button - Only show when not playing */}
-                {!isPlaying && (
-                  <motion.button
-                    initial={{ opacity: 1 }}
-                    animate={{ opacity: isPlaying ? 0 : 1 }}
-                    transition={{ duration: 0.2 }}
-                    onClick={() => {
-                      const video = playerRef.current as HTMLVideoElement
-                      if (video) {
-                        video.play()
-                      }
-                    }}
-                    className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-200"
-                  >
-                    <div className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full p-6 shadow-lg transition-all duration-200">
-                      <Play className="w-12 h-12 text-gray-800 ml-1" fill="currentColor" />
-                    </div>
-                  </motion.button>
-                )}
-
-                {/* Pause Button Overlay - Only show when playing and on hover */}
-                {isPlaying && (
-                  <button
-                    onClick={() => {
-                      const video = playerRef.current as HTMLVideoElement
-                      if (video) {
-                        video.pause()
-                      }
-                    }}
-                    className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-200 opacity-0 hover:opacity-100"
-                  >
-                    <div className="bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full p-6 shadow-lg transition-all duration-200">
-                      <Pause className="w-12 h-12 text-gray-800" fill="currentColor" />
-                    </div>
-                  </button>
-                )}
-
-                {/* Custom Progress Bar - Only show after first play, when paused or on hover */}
-                {hasPlayedOnce && (
-                  <div
-                    ref={progressBarRef}
-                    className="absolute bottom-0 left-0 right-0 h-2 bg-black bg-opacity-20 cursor-pointer opacity-0 hover:opacity-100 group-hover:opacity-100 transition-opacity duration-200"
-                    onMouseDown={handleProgressBarMouseDown}
-                    onClick={handleProgressBarClick}
-                    style={{ opacity: isPlaying ? 0 : 1 }}
-                  >
-                    <div
-                      className="h-full bg-white transition-all duration-75"
-                      style={{ width: `${progress * 100}%` }}
-                    ></div>
-                    {/* Progress handle */}
-                    <div
-                      className="absolute top-1/2 transform -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-md opacity-0 hover:opacity-100 transition-opacity duration-200"
-                      style={{ left: `${progress * 100}%`, marginLeft: "-6px" }}
-                    ></div>
-                  </div>
-                )}
-              </motion.div>
-              </div>
-            </section>
+            <HeroSection
+              isPlaying={isPlaying}
+              setIsPlaying={setIsPlaying}
+              hasPlayedOnce={hasPlayedOnce}
+              setHasPlayedOnce={setHasPlayedOnce}
+              progress={progress}
+              setProgress={setProgress}
+              isDragging={isDragging}
+              setIsDragging={setIsDragging}
+            />
           </ScrollSection>
 
-
-
           {/* About the Podcast */}
-          <motion.div animate={{ opacity: isPlaying ? 0.5 : 1 }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}>
-            <ScrollSection delay={0.1} id="audience" useStandardMargin={true}>
-              <section className="py-8">
-                <div className="flex items-center mb-8">
-                  <div className="w-12 h-12 bg-[#2B6951] rounded-full flex items-center justify-center mr-4">
-                    <Users className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-3xl font-bold text-gray-900" style={{ fontFamily: "var(--font-amaranth)" }}>
-                    About our Audience
-                  </h3>
-                </div>
-
-                <div className="prose prose-lg max-w-none">
-                  <p className="text-base text-gray-700 leading-relaxed mb-6">
-                    We try to keep in mind this audience demographic:
-                  </p>
-
-                  <div className="grid md:grid-cols-3 gap-8 mt-8">
-                    <div className="text-center p-6 bg-green-50 rounded-lg">
-                      <div className="text-3xl font-bold text-[#2B6951] mb-2">82%</div>
-                      <div className="text-sm text-gray-700">Ages 18-27</div>
-                    </div>
-                    <div className="text-center p-6 bg-green-50 rounded-lg">
-                      <div className="text-3xl font-bold text-[#2B6951] mb-2">50/50</div>
-                      <div className="text-sm text-gray-700">Male/Female</div>
-                    </div>
-                    <div className="text-center p-6 bg-green-50 rounded-lg">
-                      <div className="text-2xl font-bold text-[#2B6951] mb-2">Mostly Christian</div>
-                      <div className="text-sm text-gray-700">or seeking</div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-            </ScrollSection>
-          </motion.div>
+          <ScrollSection delay={0.1} id="audience" useStandardMargin={true}>
+            <AudienceSection isPlaying={isPlaying} />
+          </ScrollSection>
 
           {/* Content & Conversation */}
-          <motion.div animate={{ opacity: isPlaying ? 0.5 : 1 }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}>
-            <ScrollSection delay={0.2} id="conversation">
-              <section className="py-8">
-                <div className="flex items-center mb-8">
-                  <div className="w-12 h-12 bg-[#2B6951] rounded-full flex items-center justify-center mr-4">
-                    <Mic className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-3xl font-bold text-gray-900" style={{ fontFamily: "var(--font-amaranth)" }}>
-                    Content & Conversation
-                  </h3>
-                </div>
-
-                <div className="space-y-6 text-base text-gray-700 leading-relaxed">
-                  {guestLoading ? (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin text-[#2B6951] mr-2" />
-                      <span>Loading guest information...</span>
-                    </div>
-                  ) : null}
-                  
-                  <p>
-                    <strong className="text-[#2B6951]">{guestName}, you're the expert!</strong> We'll have some
-                    questions prepared, but feel free to take the conversation wherever you feel most led.
-                  </p>
-                  
-                  <p>
-                    Let us know if there's a topic you'd really love to cover. The best episodes are when guests are
-                    sharing what excites them most.
-                  </p>
-                  
-                  <p>
-                    We especially love hearing <strong className="text-[#2B6951]">stories from your own life</strong>{" "}
-                    that contain wisdom or practical takeaways.
-                  </p>
-                  
-                  {guestData?.pageContent && (
-                    <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg mt-6">
-                      <h4 className="font-semibold text-[#2B6951] mb-4">Planned Questions:</h4>
-                      <div className="prose prose-sm max-w-none text-gray-700">
-                        <pre className="whitespace-pre-wrap font-sans">{removeMarkdownHeaders(guestData.pageContent)}</pre>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {guestError && (
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-6">
-                      <p className="text-gray-600 text-center">
-                        Questions are under construction!
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </section>
-            </ScrollSection>
-          </motion.div>
+          <ScrollSection delay={0.2} id="conversation">
+            <ConversationSection 
+              isPlaying={isPlaying} 
+              guestName={guestName} 
+              lastName={lastName} 
+            />
+          </ScrollSection>
 
           {/* Tech Setup */}
-          <motion.div animate={{ opacity: isPlaying ? 0.5 : 1 }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}>
-            <ScrollSection delay={0.3} id="tech">
-              <section className="py-8">
-                <div className="flex items-center mb-8">
-                  <div className="w-12 h-12 bg-[#2B6951] rounded-full flex items-center justify-center mr-4">
-                    <Video className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-3xl font-bold text-gray-900" style={{ fontFamily: "var(--font-amaranth)" }}>
-                    Tech Setup
-                  </h3>
-                </div>
-
-                <div className="space-y-8">
-                  <div className="bg-green-50 p-6 rounded-lg">
-                    <h4
-                      className="text-xl font-semibold text-[#2B6951] mb-3"
-                      style={{ fontFamily: "var(--font-amaranth)" }}
-                    >
-                      Recording Platform
-                    </h4>
-                    <p className="text-base text-gray-700 mb-4">
-                      We'll be recording on <strong>Riverside</strong>, a video podcast recording site sort of like
-                      Zoom. No special software needed.
-                    </p>
-                    <Button asChild className="bg-[#2B6951] hover:bg-[#1e4a3a] text-white">
-                      <a
-                        href="https://riverside.fm/studio/walking-with-the-wise-RG9lo?t=8007373b3bef44669da6&gw=on"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Test Your Setup Here
-                      </a>
-                    </Button>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-8">
-                    <div>
-                      <h4
-                        className="text-xl font-semibold text-[#2B6951] mb-3"
-                        style={{ fontFamily: "var(--font-amaranth)" }}
-                      >
-                        Audio
-                      </h4>
-                      <ul className="space-y-2 text-base text-gray-700">
-                        <li>• External mic is great if you have one</li>
-                        <li>• If not, no worries!</li>
-                        <li>• Avoid AirPods, please (poor sound quality)</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4
-                        className="text-xl font-semibold text-[#2B6951] mb-3"
-                        style={{ fontFamily: "var(--font-amaranth)" }}
-                      >
-                        Environment preferences
-                      </h4>
-                      <ul className="space-y-2 text-base text-gray-700">
-                        <li>• Any pleasant background, like a living room or studio</li>
-                        <li>• Natural light or ring light is ideal</li>
-                        <li>• Whatever you have is fine, though!</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </section>
-            </ScrollSection>
-          </motion.div>
+          <ScrollSection delay={0.3} id="tech">
+            <TechSection isPlaying={isPlaying} />
+          </ScrollSection>
 
           {/* About Nate & Sam */}
-          <motion.div animate={{ opacity: isPlaying ? 0.5 : 1 }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}>
-            <ScrollSection delay={0.4} id="about">
-              <section className="py-8">
-                <h3
-                  className="text-3xl font-bold text-gray-900 mb-8 text-center"
-                  style={{ fontFamily: "var(--font-amaranth)" }}
-                >
-                  About Nate & Sam
-                </h3>
-
-                <div className="grid md:grid-cols-2 gap-12">
-                  <div className="text-center">
-                    <img
-                      src="/nate.png"
-                      alt="Nate, one of the podcast hosts"
-                      className="w-32 h-32 rounded-full mx-auto mb-6 object-cover"
-                    />
-                    <h4
-                      className="text-xl font-semibold text-[#2B6951] mb-3"
-                      style={{ fontFamily: "var(--font-amaranth)" }}
-                    >
-                      Nate
-                    </h4>
-                    <p className="text-base text-gray-700 leading-relaxed mb-4">
-                      I grew up in Las Vegas, NV! I graduated from Liberty in 2025 with a degree in Mechanical Engineering, and I'm working at LU right now on a business accelerator!
-                    </p>
-                    <div className="flex justify-center space-x-4">
-                      <a
-                        href="https://www.instagram.com/nate.breed22/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#2B6951] hover:text-[#1e4a3a] transition-colors"
-                      >
-                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                        </svg>
-                      </a>
-                      <a
-                        href="https://www.linkedin.com/in/nathanaelbreed/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#2B6951] hover:text-[#1e4a3a] transition-colors"
-                      >
-                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <img
-                      src="/sam.png"
-                      alt="Sam, one of the podcast hosts"
-                      className="w-32 h-32 rounded-full mx-auto mb-6 object-cover"
-                    />
-                    <h4
-                      className="text-xl font-semibold text-[#2B6951] mb-3"
-                      style={{ fontFamily: "var(--font-amaranth)" }}
-                    >
-                      Sam
-                    </h4>
-                    <p className="text-base text-gray-700 leading-relaxed mb-4">
-                      Hey! I grew up partly in North Africa and partly in Kentucky. I graduated from Liberty in 2025 and
-                      currently work at Microsoft doing cybersecurity. I love to play devil's advocate in the interview!
-                    </p>
-                    <div className="flex justify-center space-x-4">
-                      <a
-                        href="https://www.instagram.com/sambodine0/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#2B6951] hover:text-[#1e4a3a] transition-colors"
-                      >
-                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                        </svg>
-                      </a>
-                      <a
-                        href="https://www.linkedin.com/in/sambodine/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#2B6951] hover:text-[#1e4a3a] transition-colors"
-                      >
-                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </section>
-            </ScrollSection>
-          </motion.div>
+          <ScrollSection delay={0.4} id="about">
+            <AboutSection isPlaying={isPlaying} />
+          </ScrollSection>
 
           {/* Footer */}
-          <motion.div animate={{ opacity: isPlaying ? 0.5 : 1 }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}>
-            <ScrollSection delay={0.5} useStandardMargin={true}>
-              <footer className="text-center py-12 border-t border-gray-100">
-                <p className="text-base text-gray-600 mb-4">
-                  We can't wait to learn from you and share your wisdom with our community.
-                </p>
-                <p className="text-lg font-semibold text-[#2B6951]">Thank you for joining us, {guestName}!</p>
-              </footer>
-            </ScrollSection>
-          </motion.div>
+          <ScrollSection delay={0.5} useStandardMargin={true}>
+            <FooterSection isPlaying={isPlaying} guestName={guestName} />
+          </ScrollSection>
 
           {/* Latest Episode Preview */}
           <ScrollSection delay={0.6} id="latest-episode">
-            <section className="py-8">
-              <h3
-                className="text-3xl font-bold text-gray-900 mb-8 text-center"
-                style={{ fontFamily: "var(--font-amaranth)" }}
-              >
-                Latest Episode
-              </h3>
-              <div className="flex justify-center">
-                <iframe
-                  style={{ borderRadius: '12px' }}
-                  src="https://open.spotify.com/embed/show/1fkC3b3Gl2UvE5MTM6v3vF?utm_source=generator"
-                  width="100%"
-                  height="152"
-                  frameBorder="0"
-                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                  loading="lazy"
-                  allowFullScreen
-                  title="Walking With The Wise Podcast Preview"
-                ></iframe>
-              </div>
-            </section>
+            <LatestEpisodeSection />
           </ScrollSection>
         </main>
       </motion.div>
