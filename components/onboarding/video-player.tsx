@@ -113,7 +113,7 @@ export function VideoPlayer({
         {/* Video element */}
         <video
           ref={playerRef as any}
-          src="https://pub-bd9011e5a7894589b50ac5a4e1765260.r2.dev/Placeholder%20for%20Onbaording.mov"
+          src="https://pub-bd9011e5a7894589b50ac5a4e1765260.r2.dev/IMBeggar%20Pitch.mov"
           style={{
             width: "100%",
             height: "100%",

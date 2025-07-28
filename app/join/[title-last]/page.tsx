@@ -37,7 +37,7 @@ export default function OnboardingPage() {
   const [showRestOfPage, setShowRestOfPage] = useState(false)
   const [fadeOut, setFadeOut] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [progressBarWidth, setProgressBarWidth] = useState(0)
+  // const [progressBarWidth, setProgressBarWidth] = useState(0) // no longer used
   const [hasPlayedOnce, setHasPlayedOnce] = useState(false)
   const [progress, setProgress] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
@@ -89,31 +89,12 @@ export default function OnboardingPage() {
       // Show thank you message 2 seconds after fade out starts (total 5 seconds)
       const thankYouTimer = setTimeout(() => setShowThankYou(true), 5000)
 
-      // Start progress bar animation when thank you message shows
-      const progressStartTimer = setTimeout(() => {
-        const startTime = Date.now()
-        const duration = 8000 // 8 seconds
-        
-        const updateProgress = () => {
-          const elapsed = Date.now() - startTime
-          const progress = Math.min(elapsed / duration, 1)
-          setProgressBarWidth(progress * 100)
-          
-          if (progress < 1) {
-            requestAnimationFrame(updateProgress)
-          }
-        }
-        
-        updateProgress()
-      }, 5000)
-
-      // Show rest of page 8 seconds after thank you starts (total 13 seconds)
-      const restOfPageTimer = setTimeout(() => setShowRestOfPage(true), 13000)
+      // Show the rest of the page shortly after the thank-you appears (no long wait)
+      const restOfPageTimer = setTimeout(() => setShowRestOfPage(true), 6000)
 
       return () => {
         clearTimeout(fadeTimer)
         clearTimeout(thankYouTimer)
-        clearTimeout(progressStartTimer)
         clearTimeout(restOfPageTimer)
       }
     }
@@ -169,6 +150,7 @@ export default function OnboardingPage() {
         transition={{ duration: 1, ease: "easeOut" }}
       >
         <div className="text-center px-4 max-w-4xl">
+          {/*
           <motion.p
             className="text-lg text-gray-700 mb-8 leading-relaxed max-w-3xl text-left"
             initial={{ opacity: 0, y: 20 }}
@@ -177,26 +159,21 @@ export default function OnboardingPage() {
           >
             {getIntroText()}
           </motion.p>
-          <motion.p
-            className="text-lg text-gray-700 leading-relaxed max-w-3xl text-left"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.0 }}
-          >
-            <strong className="text-[#2B6951]">Pro Rege,</strong><br />
-            Nate and Sam
-          </motion.p>
+          */}
+          {lastName.toLowerCase() !== "schwab" && (
+            <motion.p
+              className="text-lg text-gray-700 leading-relaxed max-w-3xl text-left"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1.0 }}
+            >
+              <strong className="text-[#2B6951]">Pro Rege,</strong><br />
+              Nate and Sam
+            </motion.p>
+          )}
         </div>
         
-        {/* Progress Bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-2 bg-gray-200">
-          <motion.div
-            className="h-full bg-[#2B6951]"
-            initial={{ width: "0%" }}
-            animate={{ width: `${progressBarWidth}%` }}
-            transition={{ duration: 0.1, ease: "linear" }}
-          />
-        </div>
+        {/* Progress bar removed */}
       </motion.div>
     )
   }
