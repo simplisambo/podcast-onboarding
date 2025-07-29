@@ -60,7 +60,7 @@ export function ConversationSection({ isPlaying, guestName, lastName }: Conversa
               <h4 className="font-semibold text-[#2B6951] mb-2 text-center" style={{ fontSize: "1.25rem" }}>Structure</h4>
               <div className="space-y-6">
                 <div className="space-y-3">
-                  <p className="font-medium text-[#2B6951] mb-2" style={{ fontSize: "1rem", lineHeight: "1.5" }}>Questions</p>
+                  <p className="font-medium text-[#2B6951] mb-2" style={{ fontSize: "1rem", lineHeight: "1.5" }}>General topics</p>
                   {/* Original content from Notion, ending before "close" */}
                   <div className="prose prose-sm max-w-none text-gray-700">
                     <div className="whitespace-pre-wrap" style={{ fontFamily: "serif" }}>

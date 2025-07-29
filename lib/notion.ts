@@ -164,19 +164,24 @@ export async function findGuestByLastName(lastName: string): Promise<GuestData |
         blockType = 'callout'
       }
       
-      // Check if this block starts the questions section
-      if (blockType === 'heading_2' && blockText.toLowerCase().includes('## questions')) {
+      // Check if this block starts the topic section
+      if ((blockType === 'heading_1' || blockType === 'heading_2' || blockType === 'heading_3') && blockText.toLowerCase().includes('#') && blockText.toLowerCase().includes('topic')) {
         inQuestionsSection = true
-        continue // Skip the "## Questions" header itself
+        continue // Skip the "Topic" header itself
       }
       
-      // Check if this block contains "post-recording" (case insensitive)
-      if (blockText.toLowerCase().includes('post-recording')) {
-        break // Stop at post-recording section
+      // Check if this block contains "pre-recording" (case insensitive)
+      if (blockText.toLowerCase().includes('pre-recording')) {
+        break // Stop at pre-recording section
       }
       
-      // If we're in the questions section, add the content
+      // If we're in the topic section, add the content
       if (inQuestionsSection) {
+        questionsContent += blockText
+      }
+      
+      // If no topic section was found, collect all content until pre-recording
+      if (!inQuestionsSection && blockText.trim() !== '') {
         questionsContent += blockText
       }
     }
