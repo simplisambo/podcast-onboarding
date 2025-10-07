@@ -227,7 +227,7 @@ export default function OnboardingPage() {
           { id: "conversation", label: "Content & Conversation" },
           { id: "about", label: "About Nate & Sam" },
           { id: "tech", label: "Tech Setup" },
-          { id: "latest-episode", label: "Latest Episode" },
+          { id: "latest-episode", label: "Example Episode" },
           { id: "testimonials", label: "Testimonials" },
         ]}
       />
