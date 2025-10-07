@@ -41,18 +41,21 @@ export function ConversationSection({ isPlaying, guestName, lastName }: Conversa
           ) : null}
           
           <p>
-            <strong className="text-[#2B6951]">{guestName}, you're the expert!</strong> We'll have some
-            questions prepared, but feel free to take the conversation wherever you feel most led.
+            Our podcast is especially focused on helping listeners <strong className="text-[#2B6951]">implement</strong> what we talk about. So, as important as the why is in everything, we tend to focus on the <strong className="text-[#2B6951]">how</strong>.
           </p>
           
           <p>
-            Let us know if there's a topic you'd really love to cover. The best episodes are when guests are
-            sharing what excites them most.
+            Ideal conversation is what we call "NAP-y". It's
           </p>
           
+          <ul className="list-disc list-inside ml-4 space-y-2">
+            <li><strong className="text-[#2B6951]">novel</strong> (a new insight most haven't heard)</li>
+            <li><strong className="text-[#2B6951]">actionable</strong> (insight that helps me to act)</li>
+            <li><strong className="text-[#2B6951]">paint point</strong> (solves a painful problem)</li>
+          </ul>
+          
           <p>
-            We especially love hearing <strong className="text-[#2B6951]">stories from your own life</strong>{" "}
-            that contain wisdom or practical takeaways.
+            But, <strong className="text-[#2B6951]">{guestName}</strong>, you're the expert! We are happy to follow wherever you take us :)
           </p>
           
           {guestData?.pageContent && (

@@ -3,7 +3,6 @@
 import React from "react"
 import { motion } from "framer-motion"
 import { VideoPlayer } from "./video-player"
-import { SocialProofSection } from "./social-proof-section"
 
 interface HeroSectionProps {
   isPlaying: boolean
@@ -49,8 +48,6 @@ export function HeroSection({
         isDragging={isDragging}
         setIsDragging={setIsDragging}
       />
-      {/* Social Proof Section */}
-      <SocialProofSection isPlaying={isPlaying} />
     </section>
   )
 } 

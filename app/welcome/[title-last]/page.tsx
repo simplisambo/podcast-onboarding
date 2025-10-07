@@ -18,6 +18,7 @@ import {
   AboutSection,
   FooterSection,
   LatestEpisodeSection,
+  SocialProofSection,
 } from "@/components/onboarding"
 
 // Function to get time-based greeting
@@ -264,14 +265,14 @@ export default function OnboardingPage() {
             />
           </ScrollSection>
 
-          {/* Tech Setup */}
-          <ScrollSection delay={0.3} id="tech">
-            <TechSection isPlaying={isPlaying} />
+          {/* About Nate & Sam */}
+          <ScrollSection delay={0.3} id="about">
+            <AboutSection isPlaying={isPlaying} />
           </ScrollSection>
 
-          {/* About Nate & Sam */}
-          <ScrollSection delay={0.4} id="about">
-            <AboutSection isPlaying={isPlaying} />
+          {/* Tech Setup */}
+          <ScrollSection delay={0.4} id="tech">
+            <TechSection isPlaying={isPlaying} />
           </ScrollSection>
 
           {/* Latest Episode Preview */}
@@ -279,8 +280,13 @@ export default function OnboardingPage() {
             <LatestEpisodeSection />
           </ScrollSection>
 
+          {/* Social Proof Section */}
+          <ScrollSection delay={0.6} id="testimonials">
+            <SocialProofSection isPlaying={isPlaying} />
+          </ScrollSection>
+
           {/* Footer */}
-          <ScrollSection delay={0.6} useStandardMargin={true}>
+          <ScrollSection delay={0.7} useStandardMargin={true}>
             <FooterSection isPlaying={isPlaying} guestName={guestName} />
           </ScrollSection>
         </main>
