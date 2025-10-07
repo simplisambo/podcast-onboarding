@@ -195,7 +195,17 @@ export default function OnboardingPage() {
         />
       </motion.div>
 
-      <TableOfContents isVideoPlaying={isPlaying} />
+      <TableOfContents 
+        isVideoPlaying={isPlaying} 
+        sections={[
+          { id: "intro", label: "Intro" },
+          { id: "audience", label: "About our Audience" },
+          { id: "conversation", label: "Content & Conversation" },
+          { id: "tech", label: "Tech Setup" },
+          { id: "about", label: "About Nate & Sam" },
+          { id: "latest-episode", label: "Latest Episode" },
+        ]}
+      />
 
       {/* White overlay that appears when video is playing */}
       <motion.div

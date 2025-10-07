@@ -3,28 +3,36 @@
 import React, { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 
-interface TableOfContentsProps {
-  isVideoPlaying: boolean
+interface Section {
+  id: string
+  label: string
 }
 
-export function TableOfContents({ isVideoPlaying }: TableOfContentsProps) {
+interface TableOfContentsProps {
+  isVideoPlaying: boolean
+  sections: Section[]
+}
+
+export function TableOfContents({ isVideoPlaying, sections }: TableOfContentsProps) {
   const [activeSection, setActiveSection] = useState("intro")
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ["intro", "audience", "conversation", "tech", "about"]
       const windowHeight = window.innerHeight
       const scrollPosition = window.scrollY + windowHeight / 2 // Middle of the screen
 
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const element = document.getElementById(sections[i])
+      // Use the sections passed as props in the correct order
+      const sectionIds = sections.map(section => section.id)
+
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const element = document.getElementById(sectionIds[i])
         if (element) {
           const elementTop = element.offsetTop
           const elementBottom = elementTop + element.offsetHeight
           
           // Check if the middle of the screen is within this section
           if (scrollPosition >= elementTop && scrollPosition <= elementBottom) {
-            setActiveSection(sections[i])
+            setActiveSection(sectionIds[i])
             break
           }
         }
@@ -33,7 +41,7 @@ export function TableOfContents({ isVideoPlaying }: TableOfContentsProps) {
 
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [sections])
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
@@ -41,15 +49,6 @@ export function TableOfContents({ isVideoPlaying }: TableOfContentsProps) {
       element.scrollIntoView({ behavior: "smooth" })
     }
   }
-
-  const sections = [
-    { id: "intro", label: "Intro" },
-    { id: "audience", label: "About our Audience" },
-    { id: "conversation", label: "Content & Conversation" },
-    { id: "tech", label: "Tech Setup" },
-    { id: "about", label: "About Nate & Sam" },
-    { id: "latest-episode", label: "Latest Episode" },
-  ]
 
   return (
     <motion.div
