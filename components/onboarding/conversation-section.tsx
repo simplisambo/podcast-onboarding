@@ -97,10 +97,8 @@ export function ConversationSection({ isPlaying, guestName, lastName }: Conversa
                 {/* Additional structure content */}
                 <div className="pt-6" style={{ fontFamily: "serif" }}>
                   <div className="space-y-3 mb-6">
-                    <p className="font-medium text-[#2B6951] mb-2" style={{ fontSize: "1rem", lineHeight: "1.5" }}>Consistent three rapid-fire questions:</p>
+                    <p className="font-medium text-[#2B6951] mb-2" style={{ fontSize: "1rem", lineHeight: "1.5" }}>Consistent final question:</p>
                     <ul className="list-disc list-inside ml-0">
-                      <li>What's your favorite Bible verse and why?</li>
-                      <li>What one book has most changed your life?</li>
                       <li>What one action would you most challenge our listeners to take?</li>
                     </ul>
                   </div>
