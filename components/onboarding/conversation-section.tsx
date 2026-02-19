@@ -18,7 +18,7 @@ interface ConversationSectionProps {
 
 export function ConversationSection({ isPlaying, guestName, lastName }: ConversationSectionProps) {
   // Fetch guest data from Notion
-  const { guestData, loading: guestLoading, error: guestError } = useGuestData(lastName)
+  const { guestData, loading: guestLoading } = useGuestData(lastName)
 
   return (
     <motion.div animate={{ opacity: isPlaying ? 0.5 : 1 }} transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}>
@@ -113,14 +113,6 @@ export function ConversationSection({ isPlaying, guestName, lastName }: Conversa
                   
                 </div>
               </div>
-            </div>
-          )}
-          
-          {guestError && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-6">
-              <p className="text-gray-600 text-center">
-                Questions are under construction!
-              </p>
             </div>
           )}
         </div>
